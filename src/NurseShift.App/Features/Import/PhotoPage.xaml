@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" x:Class="NurseShift.App.Features.Import.PhotoPage" Title="{x:Static res:UiStrings.PhotoTitle}">
+  <Grid RowDefinitions="*,Auto"><Grid x:Name="PhotoContainer" BackgroundColor="Black"><Image x:Name="Photo" Source="{Binding Image}" Aspect="AspectFit" SemanticProperties.Description="{x:Static res:UiStrings.PhotoDescription}" /></Grid><Button Grid.Row="1" Text="{x:Static res:UiStrings.Close}" Clicked="OnCloseClicked" MinimumHeightRequest="52" /></Grid>
+</ContentPage>

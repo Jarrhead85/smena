@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:vm="clr-namespace:NurseShift.App.Features.Import" x:Class="NurseShift.App.Features.Import.ImportPage" Title="{x:Static res:UiStrings.ImportTitle}">
+  <Grid RowDefinitions="*,Auto"><CollectionView ItemsSource="{Binding Pages}"><CollectionView.Header><VerticalStackLayout Padding="16" Spacing="12"><Label Text="{x:Static res:UiStrings.ImportTitle}" Style="{StaticResource ScreenTitle}" /><Label Text="{x:Static res:UiStrings.CaptureHint}" /><Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"><Button Text="{x:Static res:UiStrings.Capture}" Command="{Binding CaptureCommand}" /><Button Grid.Column="1" Text="{x:Static res:UiStrings.Gallery}" Command="{Binding PickCommand}" Style="{StaticResource SecondaryButton}" /></Grid><Label Text="{x:Static res:UiStrings.ExternalTransfer}" Style="{StaticResource SecondaryText}" /></VerticalStackLayout></CollectionView.Header>
+    <CollectionView.ItemTemplate>
+      <DataTemplate x:DataType="vm:ImportPageRow">
+        <VerticalStackLayout Padding="16,8" Spacing="8">
+          <Label Text="{Binding Title}" Style="{StaticResource SectionTitle}" />
+          <Label Text="{Binding State}" />
+          <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="8" IsEnabled="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.IsBusy, Converter={StaticResource InverseBoolConverter}}" RowSpacing="8">
+            <Button Text="{x:Static res:UiStrings.Rotate}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RotateCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+            <Button Grid.Column="1" Text="{x:Static res:UiStrings.ReplacePage}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ReplaceCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+            <Button Grid.Row="1" Text="{x:Static res:UiStrings.MoveUp}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MoveUpCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+            <Button Grid.Row="1" Grid.Column="1" Text="{x:Static res:UiStrings.MoveDown}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.MoveDownCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+            <Button Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Static res:UiStrings.Delete}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteCommand}" CommandParameter="{Binding .}" Style="{StaticResource DangerButton}" />
+          </Grid>
+          <BoxView />
+        </VerticalStackLayout>
+      </DataTemplate>
+    </CollectionView.ItemTemplate>
+    <CollectionView.Footer><VerticalStackLayout Padding="16" Spacing="8"><Label Text="{Binding ProgressText}" /><Button Text="{x:Static res:UiStrings.Cancel}" Command="{Binding CancelProcessingCommand}" IsVisible="{Binding IsRecognizing}" Style="{StaticResource SecondaryButton}" /><Button Text="{x:Static res:UiStrings.Close}" Command="{Binding CloseCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" Style="{StaticResource SecondaryButton}" /></VerticalStackLayout></CollectionView.Footer></CollectionView>
+    <VerticalStackLayout Grid.Row="1" Padding="16" Spacing="8"><Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" /><Button Text="{Binding RecognizeText}" Command="{Binding RecognizeCommand}" IsVisible="{Binding HasPages}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" /></VerticalStackLayout>
+  </Grid>
+</ContentPage>

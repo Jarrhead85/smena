@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" x:Class="NurseShift.App.Features.Shift.NewShiftPage" Title="{x:Static res:UiStrings.NewShiftTitle}">
+  <ScrollView><VerticalStackLayout Padding="16" Spacing="12">
+    <Label Text="{x:Static res:UiStrings.NewShiftTitle}" Style="{StaticResource ScreenTitle}" />
+    <Label Text="{x:Static res:UiStrings.StartDate}" /><DatePicker Date="{Binding StartDate}" />
+    <Label Text="{x:Static res:UiStrings.StartTime}" /><TimePicker Time="{Binding StartTime}" />
+    <Label Text="{x:Static res:UiStrings.EndDate}" /><DatePicker Date="{Binding EndDate}" />
+    <Label Text="{x:Static res:UiStrings.EndTime}" /><TimePicker Time="{Binding EndTime}" />
+    <Label Text="{x:Static res:UiStrings.TimeZone}" /><Label Text="{Binding TimeZoneId}" Style="{StaticResource SecondaryText}" />
+    <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" />
+    <Button Text="{x:Static res:UiStrings.Save}" Command="{Binding SaveCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+    <Button Text="{x:Static res:UiStrings.Cancel}" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButton}" />
+  </VerticalStackLayout></ScrollView>
+</ContentPage>

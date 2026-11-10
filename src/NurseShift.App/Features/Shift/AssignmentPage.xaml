@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:core="clr-namespace:NurseShift.Core.Models;assembly=NurseShift.Core" x:Class="NurseShift.App.Features.Shift.AssignmentPage" Title="{x:Static res:UiStrings.AssignmentTitle}">
+  <Grid RowDefinitions="*,Auto"><ScrollView><VerticalStackLayout Padding="16" Spacing="10">
+    <Label Text="{x:Static res:UiStrings.AssignmentTitle}" Style="{StaticResource ScreenTitle}" /><Label Text="{Binding StatusText}" FontAttributes="Bold" IsVisible="{Binding ShowStatusActions}" />
+    <Label Text="{x:Static res:UiStrings.DueTime}" /><DatePicker Date="{Binding DueDate}" /><TimePicker Time="{Binding DueTime}" />
+    <Label Text="{x:Static res:UiStrings.Patient}" /><Entry Text="{Binding PatientName}" MaxLength="200" />
+    <Label Text="{x:Static res:UiStrings.Procedure}" /><Editor Text="{Binding Procedure}" MaxLength="500" AutoSize="TextChanges" />
+    <Grid ColumnDefinitions="*,*"><VerticalStackLayout><Label Text="{x:Static res:UiStrings.Room}" /><Entry Text="{Binding Room}" MaxLength="30" /></VerticalStackLayout><VerticalStackLayout Grid.Column="1" Margin="8,0,0,0"><Label Text="{x:Static res:UiStrings.Bed}" /><Entry Text="{Binding Bed}" MaxLength="30" /></VerticalStackLayout></Grid>
+    <Button Text="{x:Static res:UiStrings.FindPatientMatches}" Command="{Binding FindPatientMatchesCommand}" Style="{StaticResource SecondaryButton}" />
+    <Picker ItemsSource="{Binding PatientSuggestions}" SelectedItem="{Binding SelectedPatient}" ItemDisplayBinding="{Binding FullName}" Title="{x:Static res:UiStrings.PatientMatchesTitle}" IsVisible="{Binding HasPatientSuggestions}" />
+    <Label Text="{x:Static res:UiStrings.Dosage}" /><Entry Text="{Binding Dosage}" MaxLength="500" />
+    <Label Text="{x:Static res:UiStrings.Comment}" /><Editor Text="{Binding Comment}" MaxLength="2000" AutoSize="TextChanges" />
+    <Label Text="{x:Static res:UiStrings.LeadMinutes}" /><Entry Text="{Binding LeadMinutes}" Keyboard="Numeric" />
+    <Label Text="{x:Static res:UiStrings.SourceFragment}" IsVisible="{Binding SourceExcerpt, Converter={StaticResource StringNotNullConverter}}" /><Label Text="{Binding SourceExcerpt}" Style="{StaticResource SecondaryText}" />
+    <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" />
+    <Button Text="{x:Static res:UiStrings.Save}" Command="{Binding SaveCommand}" />
+    <Grid ColumnDefinitions="*,*" IsVisible="{Binding ShowStatusActions}" ColumnSpacing="8"><Button Text="{x:Static res:UiStrings.Done}" Command="{Binding MarkDoneCommand}" IsVisible="{Binding IsFinal, Converter={StaticResource InverseBoolConverter}}" /><Button Grid.Column="1" Text="{x:Static res:UiStrings.Skip}" Command="{Binding SkipCommand}" Style="{StaticResource SecondaryButton}" IsVisible="{Binding IsFinal, Converter={StaticResource InverseBoolConverter}}" /></Grid>
+    <Button Text="{x:Static res:UiStrings.ReturnPending}" Command="{Binding ReturnPendingCommand}" IsVisible="{Binding IsFinal}" Style="{StaticResource SecondaryButton}" />
+    <Button Text="{x:Static res:UiStrings.Delete}" Command="{Binding DeleteCommand}" IsVisible="{Binding ShowStatusActions}" Style="{StaticResource DangerButton}" />
+  </VerticalStackLayout></ScrollView><Button Grid.Row="1" Text="{x:Static res:UiStrings.Back}" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButton}" Margin="16,8" /></Grid>
+</ContentPage>

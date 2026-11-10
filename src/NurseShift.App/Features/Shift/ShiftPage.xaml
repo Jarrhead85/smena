@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:vm="clr-namespace:NurseShift.App.Features.Shift" x:Class="NurseShift.App.Features.Shift.ShiftPage">
+  <Grid RowDefinitions="*,Auto">
+    <VerticalStackLayout Grid.Row="0" Padding="24" Spacing="20" VerticalOptions="Center" IsVisible="{Binding HasNoShift}">
+      <Label Text="{x:Static res:UiStrings.CurrentShift}" Style="{StaticResource ScreenTitle}" />
+      <Label Text="{x:Static res:UiStrings.NoActiveShift}" />
+      <Button Text="{x:Static res:UiStrings.StartShift}" Command="{Binding NewShiftCommand}" />
+    </VerticalStackLayout>
+    <CollectionView x:Name="Feed" Grid.Row="0" ItemsSource="{Binding Groups}" IsGrouped="True" IsVisible="{Binding HasShift}" RemainingItemsThreshold="5">
+      <CollectionView.Header><VerticalStackLayout Padding="16" Spacing="12">
+        <Label Text="{x:Static res:UiStrings.CurrentShift}" Style="{StaticResource ScreenTitle}" />
+        <Label Text="{Binding ShiftInterval}" /><Label Text="{Binding CurrentTime}" Style="{StaticResource SecondaryText}" /><Label Text="{Binding Progress}" FontAttributes="Bold" />
+        <Label Text="{x:Static res:UiStrings.TimeZoneWarning}" IsVisible="{Binding HasTimeZoneWarning}" TextColor="{AppThemeBinding Light={StaticResource WarningColor}, Dark=#F0C46C}" FontAttributes="Bold" />
+        <VerticalStackLayout IsVisible="{Binding HasReminderWarning}" Spacing="8"><Label Text="{x:Static res:UiStrings.ReminderWarning}" TextColor="{AppThemeBinding Light={StaticResource WarningColor}, Dark=#F0C46C}" FontAttributes="Bold" /><Button Text="{x:Static res:UiStrings.OpenSettings}" Command="{Binding ReminderSettingsCommand}" Style="{StaticResource SecondaryButton}" /></VerticalStackLayout>
+        <Button Text="{x:Static res:UiStrings.ResumeImport}" Command="{Binding ResumeImportCommand}" IsVisible="{Binding HasIncompleteImport}" Style="{StaticResource SecondaryButton}" />
+        <VerticalStackLayout IsVisible="{Binding IsEmpty}" Spacing="12"><Label Text="{x:Static res:UiStrings.EmptyShift}" Style="{StaticResource SectionTitle}" /><Button Text="{x:Static res:UiStrings.AddSheet}" Command="{Binding AddSheetCommand}" /><Button Text="{x:Static res:UiStrings.AddManual}" Command="{Binding AddManualCommand}" Style="{StaticResource SecondaryButton}" /></VerticalStackLayout>
+        <VerticalStackLayout IsVisible="{Binding HasFocus}" Spacing="8"><Label Text="{x:Static res:UiStrings.NextAssignment}" Style="{StaticResource SectionTitle}" /><Label Text="{Binding FocusAssignment.Time}" FontSize="28" FontAttributes="Bold" /><Label Text="{Binding FocusAssignment.Procedure}" FontAttributes="Bold" /><Label Text="{Binding FocusAssignment.Patient}" /><Label Text="{Binding FocusAssignment.Location}" Style="{StaticResource SecondaryText}" /><Button Text="{x:Static res:UiStrings.Done}" Command="{Binding MarkDoneCommand}" CommandParameter="{Binding FocusAssignment}" /></VerticalStackLayout>
+        <Grid ColumnDefinitions="*,*" IsVisible="{Binding HasFocus}"><Button Text="{x:Static res:UiStrings.AddSheet}" Command="{Binding AddSheetCommand}" Margin="0,0,4,0" /><Button Grid.Column="1" Text="{x:Static res:UiStrings.AddManual}" Command="{Binding AddManualCommand}" Style="{StaticResource SecondaryButton}" Margin="4,0,0,0" /></Grid>
+      </VerticalStackLayout></CollectionView.Header>
+      <CollectionView.GroupHeaderTemplate><DataTemplate x:DataType="vm:AssignmentGroup"><Label Text="{Binding Title}" Style="{StaticResource SectionTitle}" Padding="16,20,16,8" /></DataTemplate></CollectionView.GroupHeaderTemplate>
+      <CollectionView.ItemTemplate><DataTemplate x:DataType="vm:AssignmentRow"><VerticalStackLayout Padding="16,8" Spacing="8">
+        <Grid ColumnDefinitions="Auto,*"><Label Text="{Binding Time}" Style="{StaticResource ScheduleTime}" /><VerticalStackLayout Grid.Column="1" Spacing="4"><Label Text="{Binding Procedure}" FontAttributes="Bold" /><Label Text="{Binding Patient}" /><Label Text="{Binding Location}" Style="{StaticResource SecondaryText}" /><Label Text="{Binding Dosage}" IsVisible="{Binding HasDosage}" /><Label Text="{Binding Comment}" IsVisible="{Binding HasComment}" MaxLines="3" /><Label Text="{Binding Status}" FontAttributes="Bold" /></VerticalStackLayout></Grid>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="8"><Button Text="{x:Static res:UiStrings.Done}" Command="{Binding Source={x:Reference Feed}, Path=BindingContext.MarkDoneCommand}" CommandParameter="{Binding .}" IsVisible="{Binding IsPending}" /><Button Grid.Column="1" Text="{x:Static res:UiStrings.Details}" Command="{Binding Source={x:Reference Feed}, Path=BindingContext.DetailsCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" /></Grid>
+        <BoxView />
+      </VerticalStackLayout></DataTemplate></CollectionView.ItemTemplate>
+      <CollectionView.Footer><Button Text="{x:Static res:UiStrings.CompleteShift}" Command="{Binding CompleteShiftCommand}" Style="{StaticResource SecondaryButton}" Margin="16,24,16,16" /></CollectionView.Footer>
+    </CollectionView>
+    <Label Grid.Row="1" Text="{Binding ErrorMessage}" Padding="16" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullConverter}}" />
+  </Grid>
+</ContentPage>

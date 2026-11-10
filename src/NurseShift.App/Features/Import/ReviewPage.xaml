@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:core="clr-namespace:NurseShift.Core.Models;assembly=NurseShift.Core" xmlns:vm="clr-namespace:NurseShift.App.Features.Import" x:Class="NurseShift.App.Features.Import.ReviewPage" Title="{x:Static res:UiStrings.ReviewTitle}">
+  <Grid RowDefinitions="*,Auto">
+    <CollectionView ItemsSource="{Binding Assignments}">
+      <CollectionView.Header>
+        <VerticalStackLayout Padding="16" Spacing="12">
+          <Label Text="{x:Static res:UiStrings.ReviewTitle}" Style="{StaticResource ScreenTitle}" />
+          <Label Text="{Binding Summary}" FontAttributes="Bold" />
+          <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Pages}">
+            <BindableLayout.ItemTemplate>
+              <DataTemplate x:DataType="core:SourceImage">
+                <Button Text="{Binding SortOrder, StringFormat={x:Static res:UiStrings.PageFormat}}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectPageCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" />
+              </DataTemplate>
+            </BindableLayout.ItemTemplate>
+          </FlexLayout>
+          <Image Source="{Binding PageImage}" HeightRequest="180" Aspect="AspectFit" SemanticProperties.Description="{x:Static res:UiStrings.PhotoTitle}" />
+          <Button Text="{x:Static res:UiStrings.Retry}" Command="{Binding RetryCommand}" IsVisible="{Binding HasFailedPages}" />
+          <Button Text="{x:Static res:UiStrings.ViewPhoto}" Command="{Binding ViewPhotoCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="{x:Static res:UiStrings.AddManual}" Command="{Binding AddManualCommand}" Style="{StaticResource SecondaryButton}" />
+        </VerticalStackLayout>
+      </CollectionView.Header>
+      <CollectionView.ItemTemplate>
+        <DataTemplate x:DataType="vm:ReviewRow">
+          <VerticalStackLayout Padding="16,8" Spacing="6">
+            <Grid ColumnDefinitions="Auto,*">
+              <Label Text="{Binding Time}" Style="{StaticResource ScheduleTime}" />
+              <VerticalStackLayout Grid.Column="1">
+                <Label Text="{Binding Procedure}" FontAttributes="Bold" />
+                <Label Text="{Binding Patient}" />
+              </VerticalStackLayout>
+            </Grid>
+            <Label Text="{Binding Warning}" IsVisible="{Binding HasWarning}" TextColor="{AppThemeBinding Light={StaticResource WarningColor}, Dark=#F0C46C}" />
+            <Button Text="{x:Static res:UiStrings.Edit}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+            <BoxView />
+          </VerticalStackLayout>
+        </DataTemplate>
+      </CollectionView.ItemTemplate>
+      <CollectionView.Footer>
+        <VerticalStackLayout Padding="16" Spacing="8">
+          <Label Text="{x:Static res:UiStrings.UnparsedLines}" Style="{StaticResource SectionTitle}" IsVisible="{Binding HasUnparsed}" />
+          <VerticalStackLayout BindableLayout.ItemsSource="{Binding Unparsed}" IsVisible="{Binding HasUnparsed}" Spacing="12">
+            <BindableLayout.ItemTemplate>
+              <DataTemplate x:DataType="vm:UnparsedRow">
+                <VerticalStackLayout Spacing="6">
+                  <Label Text="{Binding Text}" />
+                  <Label Text="{Binding Reason}" Style="{StaticResource SecondaryText}" />
+                  <Button Text="{x:Static res:UiStrings.AddManual}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AddUnparsedCommand}" CommandParameter="{Binding .}" />
+                  <Button Text="{x:Static res:UiStrings.ExcludeLine}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ExcludeCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" />
+                </VerticalStackLayout>
+              </DataTemplate>
+            </BindableLayout.ItemTemplate>
+          </VerticalStackLayout>
+          <Button Text="{x:Static res:UiStrings.Back}" Command="{Binding CancelCommand}" Style="{StaticResource SecondaryButton}" />
+        </VerticalStackLayout>
+      </CollectionView.Footer>
+    </CollectionView>
+    <VerticalStackLayout Grid.Row="1" Padding="16" Spacing="8">
+      <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" />
+      <Button Text="{x:Static res:UiStrings.ConfirmAdd}" Command="{Binding ConfirmCommand}" />
+    </VerticalStackLayout>
+  </Grid>
+</ContentPage>

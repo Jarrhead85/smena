@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:vm="clr-namespace:NurseShift.App.Features.History" x:Class="NurseShift.App.Features.History.HistoryPage">
+  <VerticalStackLayout Padding="16" Spacing="12"><Label Text="{x:Static res:UiStrings.History}" Style="{StaticResource ScreenTitle}" />
+    <Label Text="{x:Static res:UiStrings.EmptyHistory}" IsVisible="{Binding IsEmpty}" VerticalOptions="Center" />
+    <CollectionView ItemsSource="{Binding Shifts}"><CollectionView.ItemTemplate><DataTemplate x:DataType="vm:ShiftListItem"><VerticalStackLayout Spacing="6" Padding="0,10"><Label Text="{Binding Dates}" FontAttributes="Bold" /><Label Text="{Binding Stats}" Style="{StaticResource SecondaryText}" /><Button Text="{x:Static res:UiStrings.Details}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" /><BoxView /></VerticalStackLayout></DataTemplate></CollectionView.ItemTemplate></CollectionView>
+  </VerticalStackLayout>
+</ContentPage>

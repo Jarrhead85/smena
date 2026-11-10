@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" x:Class="NurseShift.App.Features.Settings.SettingsPage">
+  <ScrollView><VerticalStackLayout Padding="16" Spacing="12">
+    <Label Text="{x:Static res:UiStrings.Settings}" Style="{StaticResource ScreenTitle}" />
+    <Label Text="{x:Static res:UiStrings.GigaChat}" Style="{StaticResource SectionTitle}" /><Label Text="{Binding KeyState}" Style="{StaticResource SecondaryText}" />
+    <Label Text="{x:Static res:UiStrings.AuthorizationKey}" /><Entry Text="{Binding AuthorizationKey}" IsPassword="True" />
+    <Button Text="{x:Static res:UiStrings.SaveKey}" Command="{Binding SaveKeyCommand}" /><Button Text="{x:Static res:UiStrings.DeleteKey}" Command="{Binding DeleteKeyCommand}" Style="{StaticResource SecondaryButton}" />
+    <Label Text="{x:Static res:UiStrings.Model}" /><Entry Text="{Binding Model}" />
+    <Label Text="{x:Static res:UiStrings.Scope}" /><Picker SelectedItem="{Binding Scope}" Title="{x:Static res:UiStrings.Scope}"><Picker.ItemsSource><x:Array Type="{x:Type x:String}"><x:String>GIGACHAT_API_PERS</x:String><x:String>GIGACHAT_API_B2B</x:String><x:String>GIGACHAT_API_CORP</x:String></x:Array></Picker.ItemsSource></Picker>
+    <Button Text="{x:Static res:UiStrings.TestConnection}" Command="{Binding TestConnectionCommand}" Style="{StaticResource SecondaryButton}" />
+    <BoxView /><Label Text="{x:Static res:UiStrings.Reminders}" Style="{StaticResource SectionTitle}" />
+    <Label Text="{x:Static res:UiStrings.LeadMinutes}" /><Entry Text="{Binding LeadMinutes}" Keyboard="Numeric" />
+    <Button Text="{x:Static res:UiStrings.ReminderPermissions}" Command="{Binding OpenReminderSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+    <Label Text="{x:Static res:UiStrings.PrivateNotifications}" /><Switch IsToggled="{Binding PrivateNotifications}" />
+    <BoxView /><Label Text="{x:Static res:UiStrings.Theme}" /><Picker SelectedIndex="{Binding ThemeIndex}" Title="{x:Static res:UiStrings.ThemeTitle}"><Picker.ItemsSource><x:Array Type="{x:Type x:String}"><x:String>{x:Static res:UiStrings.SystemTheme}</x:String><x:String>{x:Static res:UiStrings.LightTheme}</x:String><x:String>{x:Static res:UiStrings.DarkTheme}</x:String></x:Array></Picker.ItemsSource></Picker>
+    <BoxView /><Label Text="{x:Static res:UiStrings.SecurityData}" Style="{StaticResource SectionTitle}" /><Label Text="{x:Static res:UiStrings.SecurityDescription}" Style="{StaticResource SecondaryText}" />
+    <Label Text="{x:Static res:UiStrings.LockWithDeviceCredential}" /><Switch IsToggled="{Binding LockWithDeviceCredential}" />
+    <Label Text="{x:Static res:UiStrings.HistoryRetention}" /><Picker SelectedItem="{Binding RetentionDays}" Title="{x:Static res:UiStrings.HistoryRetention}"><Picker.ItemsSource><x:Array Type="{x:Type x:Int32}"><x:Int32>7</x:Int32><x:Int32>30</x:Int32><x:Int32>90</x:Int32><x:Int32>-1</x:Int32></x:Array></Picker.ItemsSource></Picker>
+    <Label Text="{x:Static res:UiStrings.RetainPhotos}" /><Switch IsToggled="{Binding RetainPhotos}" />
+    <Button Text="{x:Static res:UiStrings.Save}" Command="{Binding SaveSettingsCommand}" />
+    <Button Text="{x:Static res:UiStrings.DeleteAll}" Command="{Binding DeleteAllCommand}" Style="{StaticResource DangerButton}" />
+    <BoxView /><Label Text="{x:Static res:UiStrings.About}" Style="{StaticResource SecondaryText}" />
+    <Label Text="{Binding SuccessMessage}" TextColor="{AppThemeBinding Light={StaticResource SuccessColor}, Dark=#8FD2A8}" /><Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" />
+  </VerticalStackLayout></ScrollView>
+</ContentPage>

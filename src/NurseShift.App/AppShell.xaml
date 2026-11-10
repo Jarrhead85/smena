@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="NurseShift.App.AppShell" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:shift="clr-namespace:NurseShift.App.Features.Shift" xmlns:history="clr-namespace:NurseShift.App.Features.History" xmlns:settings="clr-namespace:NurseShift.App.Features.Settings"
+       xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" Title="{x:Static res:UiStrings.AppName}">
+  <TabBar>
+    <ShellContent Title="{x:Static res:UiStrings.Shift}" ContentTemplate="{DataTemplate shift:ShiftPage}" Route="shift" />
+    <ShellContent Title="{x:Static res:UiStrings.History}" ContentTemplate="{DataTemplate history:HistoryPage}" Route="history" />
+    <ShellContent Title="{x:Static res:UiStrings.Settings}" ContentTemplate="{DataTemplate settings:SettingsPage}" Route="settings" />
+  </TabBar>
+</Shell>

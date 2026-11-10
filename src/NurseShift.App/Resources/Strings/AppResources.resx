@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Смена</value></data>
+  <data name="Start" xml:space="preserve"><value>Начать</value></data>
+  <data name="TestShift" xml:space="preserve"><value>Посмотреть тестовую смену</value></data>
+  <data name="WelcomeText" xml:space="preserve"><value>План назначений и напоминания на вашем телефоне.</value></data>
+  <data name="WelcomeFacts" xml:space="preserve"><value>Фото обрабатывается через GigaChat. Результат всегда проверяется пользователем. План и напоминания работают без интернета.</value></data>
+  <data name="CurrentShift" xml:space="preserve"><value>Текущая смена</value></data>
+  <data name="StartShift" xml:space="preserve"><value>Начать смену</value></data>
+  <data name="AddSheet" xml:space="preserve"><value>Добавить лист</value></data>
+  <data name="AddManual" xml:space="preserve"><value>Добавить вручную</value></data>
+  <data name="EmptyShift" xml:space="preserve"><value>В смене пока нет назначений</value></data>
+  <data name="NoActiveShift" xml:space="preserve"><value>Создайте смену, чтобы добавить назначения.</value></data>
+  <data name="Done" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="Details" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="CompleteShift" xml:space="preserve"><value>Завершить смену</value></data>
+  <data name="ReminderWarning" xml:space="preserve"><value>Напоминания могут не сработать. Проверьте разрешения и синхронизацию.</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>Открыть настройки</value></data>
+  <data name="ResumeImport" xml:space="preserve"><value>Импорт не завершён. Продолжить проверку</value></data>
+  <data name="NewShiftTitle" xml:space="preserve"><value>Новая смена</value></data>
+  <data name="StartDate" xml:space="preserve"><value>Дата начала</value></data>
+  <data name="StartTime" xml:space="preserve"><value>Время начала</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Дата окончания</value></data>
+  <data name="EndTime" xml:space="preserve"><value>Время окончания</value></data>
+  <data name="TimeZone" xml:space="preserve"><value>Часовой пояс смены</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="Patient" xml:space="preserve"><value>Пациент (ФИО)</value></data>
+  <data name="Procedure" xml:space="preserve"><value>Процедура</value></data>
+  <data name="Room" xml:space="preserve"><value>Палата</value></data>
+  <data name="Bed" xml:space="preserve"><value>Койка</value></data>
+  <data name="DueTime" xml:space="preserve"><value>Дата и время назначения</value></data>
+  <data name="Dosage" xml:space="preserve"><value>Дозировка (как указано)</value></data>
+  <data name="Comment" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="AssignmentTitle" xml:space="preserve"><value>Назначение</value></data>
+  <data name="Skip" xml:space="preserve"><value>Пропустить</value></data>
+  <data name="Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ReturnPending" xml:space="preserve"><value>Вернуть в ожидающие</value></data>
+  <data name="History" xml:space="preserve"><value>История</value></data>
+  <data name="Settings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Shift" xml:space="preserve"><value>Смена</value></data>
+  <data name="EmptyHistory" xml:space="preserve"><value>Завершённые смены появятся здесь</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Вернуть в активные</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Листы назначений</value></data>
+  <data name="Capture" xml:space="preserve"><value>Сфотографировать</value></data>
+  <data name="Gallery" xml:space="preserve"><value>Выбрать из галереи</value></data>
+  <data name="Recognize" xml:space="preserve"><value>Распознать страницы</value></data>
+  <data name="Rotate" xml:space="preserve"><value>Повернуть</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Выше</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Ниже</value></data>
+  <data name="ExternalTransfer" xml:space="preserve"><value>При распознавании выбранные фото передаются в GigaChat. Сохранённый план работает без сети.</value></data>
+  <data name="ReviewTitle" xml:space="preserve"><value>Проверка результата</value></data>
+  <data name="ConfirmAdd" xml:space="preserve"><value>Подтвердить и добавить в смену</value></data>
+  <data name="UnparsedLines" xml:space="preserve"><value>Неразобранные строки</value></data>
+  <data name="ExcludeLine" xml:space="preserve"><value>Я проверил(а), строка не нужна</value></data>
+  <data name="ViewPhoto" xml:space="preserve"><value>Открыть исходное фото</value></data>
+  <data name="GigaChat" xml:space="preserve"><value>GigaChat</value></data>
+  <data name="AuthorizationKey" xml:space="preserve"><value>Authorization Key</value></data>
+  <data name="SaveKey" xml:space="preserve"><value>Сохранить ключ</value></data>
+  <data name="DeleteKey" xml:space="preserve"><value>Удалить ключ</value></data>
+  <data name="TestConnection" xml:space="preserve"><value>Проверить подключение</value></data>
+  <data name="Model" xml:space="preserve"><value>Идентификатор модели</value></data>
+  <data name="Scope" xml:space="preserve"><value>Тип доступа: PERS — личный, B2B/CORP — для организации</value></data>
+  <data name="LeadMinutes" xml:space="preserve"><value>Предварительное напоминание, минут (0–60)</value></data>
+  <data name="Theme" xml:space="preserve"><value>Тема: 0 — системная, 1 — светлая, 2 — тёмная</value></data>
+  <data name="HistoryRetention" xml:space="preserve"><value>Срок истории, дней: 7, 30, 90 или -1 — до ручного удаления</value></data>
+  <data name="RetainPhotos" xml:space="preserve"><value>Сохранять фото в зашифрованном хранилище</value></data>
+  <data name="PrivateNotifications" xml:space="preserve"><value>Скрывать данные на заблокированном экране</value></data>
+  <data name="DeleteAll" xml:space="preserve"><value>Удалить все данные приложения</value></data>
+  <data name="ReminderPermissions" xml:space="preserve"><value>Открыть настройки точных напоминаний</value></data>
+  <data name="ConnectionOk" xml:space="preserve"><value>Подключение работает, модель доступна.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Сохранено.</value></data>
+  <data name="Overdue" xml:space="preserve"><value>Просрочено</value></data>
+  <data name="Now" xml:space="preserve"><value>Сейчас</value></data>
+  <data name="Soon" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Later" xml:space="preserve"><value>Позже</value></data>
+  <data name="Completed" xml:space="preserve"><value>Завершённые</value></data>
+  <data name="Pending" xml:space="preserve"><value>Ожидается</value></data>
+  <data name="Skipped" xml:space="preserve"><value>Пропущено</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка данных…</value></data>
+  <data name="Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="StorageRecovery" xml:space="preserve"><value>Не удалось открыть защищённое хранилище. Данные не удалены. Проверьте защиту устройства и перезапустите приложение.</value></data>
+  <data name="Error_None" xml:space="preserve"><value>Готово.</value></data>
+  <data name="Error_Validation" xml:space="preserve"><value>Заполните пациента, процедуру и время. Проверьте длину полей и настройки.</value></data>
+  <data name="Error_ConfirmationRequired" xml:space="preserve"><value>Требуется отдельное подтверждение действия.</value></data>
+  <data name="Error_ActiveShiftExists" xml:space="preserve"><value>Уже есть активная смена. Откройте или завершите её.</value></data>
+  <data name="Error_ShiftNotActive" xml:space="preserve"><value>Смена неактивна. Верните её в активные перед изменением.</value></data>
+  <data name="Error_ShiftNotFound" xml:space="preserve"><value>Смена не найдена. Обновите экран.</value></data>
+  <data name="Error_AssignmentNotFound" xml:space="preserve"><value>Назначение не найдено. Обновите экран.</value></data>
+  <data name="Error_ImportNotFound" xml:space="preserve"><value>Черновик импорта не найден или уже закрыт.</value></data>
+  <data name="Error_InvalidTime" xml:space="preserve"><value>Время не существует в часовом поясе смены. Выберите другое время.</value></data>
+  <data name="Error_TimeOutsideShift" xml:space="preserve"><value>Время находится вне границ смены. Исправьте его.</value></data>
+  <data name="Error_AmbiguousTime" xml:space="preserve"><value>Время неоднозначно из-за перевода часов. Уточните его вручную.</value></data>
+  <data name="Error_UnparsedLinesRemain" xml:space="preserve"><value>Обработайте каждую неразобранную строку: перенесите вручную или подтвердите исключение.</value></data>
+  <data name="Error_ConcurrentUpdate" xml:space="preserve"><value>Запись изменилась. Обновите экран и повторите действие.</value></data>
+  <data name="Error_NetworkUnavailable" xml:space="preserve"><value>Нет подключения к GigaChat. Проверьте интернет и повторите; черновик сохранён.</value></data>
+  <data name="Error_Timeout" xml:space="preserve"><value>GigaChat не ответил вовремя. Повторите запрос позже.</value></data>
+  <data name="Error_TlsValidationFailed" xml:space="preserve"><value>Безопасное соединение не установлено. Проверьте сертификаты и настройки сети.</value></data>
+  <data name="Error_Unauthorized" xml:space="preserve"><value>Авторизация не выполнена. Проверьте ключ, scope и модель в настройках.</value></data>
+  <data name="Error_PermissionDenied" xml:space="preserve"><value>Доступ запрещён. Проверьте права ключа GigaChat.</value></data>
+  <data name="Error_RateLimited" xml:space="preserve"><value>Превышен лимит GigaChat. Подождите и повторите.</value></data>
+  <data name="Error_ServiceUnavailable" xml:space="preserve"><value>GigaChat временно недоступен. Повторите позже; черновик сохранён.</value></data>
+  <data name="Error_ResponseInvalid" xml:space="preserve"><value>Ответ GigaChat не прошёл проверку. Повторите страницу или введите назначения вручную.</value></data>
+  <data name="Error_ImageTooLarge" xml:space="preserve"><value>Изображение слишком большое. Переснимите или выберите другое.</value></data>
+  <data name="Error_ImageUnreadable" xml:space="preserve"><value>Не удалось прочитать изображение. Проверьте разрешение камеры и переснимите.</value></data>
+  <data name="Error_StorageUnavailable" xml:space="preserve"><value>Не удалось открыть локальное хранилище. Данные не удалялись.</value></data>
+  <data name="Error_SchedulingDenied" xml:space="preserve"><value>Разрешите уведомления и точные будильники в настройках Android.</value></data>
+  <data name="Error_SchedulingFailed" xml:space="preserve"><value>План сохранён, но напоминание не синхронизировано. Повторите синхронизацию.</value></data>
+  <data name="Error_Unknown" xml:space="preserve"><value>Операция не завершена. Повторите действие; введённые данные сохранены.</value></data>
+  <data name="NextAssignment" xml:space="preserve"><value>Ближайшее назначение</value></data>
+  <data name="SourceFragment" xml:space="preserve"><value>Исходный фрагмент</value></data>
+  <data name="CompletedShift" xml:space="preserve"><value>Завершённая смена</value></data>
+  <data name="CaptureHint" xml:space="preserve"><value>Расположите лист ровно. Проверьте, что текст не размыт и не обрезан.</value></data>
+  <data name="PhotoTitle" xml:space="preserve"><value>Исходное фото</value></data>
+  <data name="PhotoDescription" xml:space="preserve"><value>Исходный лист. Используйте масштабирование двумя пальцами.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактировать</value></data>
+  <data name="Reminders" xml:space="preserve"><value>Напоминания</value></data>
+  <data name="ThemeTitle" xml:space="preserve"><value>Тема</value></data>
+  <data name="SystemTheme" xml:space="preserve"><value>Системная</value></data>
+  <data name="LightTheme" xml:space="preserve"><value>Светлая</value></data>
+  <data name="DarkTheme" xml:space="preserve"><value>Тёмная</value></data>
+  <data name="SecurityData" xml:space="preserve"><value>Безопасность и данные</value></data>
+  <data name="SecurityDescription" xml:space="preserve"><value>Фото передаются в GigaChat только по действию распознавания. История и план хранятся локально в зашифрованной БД.</value></data>
+  <data name="About" xml:space="preserve"><value>Смена 1.0 · Прототип не заменяет лист назначений и не принимает клинических решений.</value></data>
+  <data name="PageFormat" xml:space="preserve"><value>Страница {0}</value></data>
+  <data name="TimeZoneWarning" xml:space="preserve"><value>Часовой пояс устройства изменился. Локальное время назначений сохранено в поясе смены.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="SaveDraftPrompt" xml:space="preserve"><value>Сохранить черновик?</value></data>
+  <data name="SaveChangesPrompt" xml:space="preserve"><value>Сохранить введённые изменения?</value></data>
+  <data name="DiscardChanges" xml:space="preserve"><value>Удалить изменения</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="DeleteDraft" xml:space="preserve"><value>Удалить черновик</value></data>
+  <data name="DeleteAssignmentTitle" xml:space="preserve"><value>Удалить назначение?</value></data>
+  <data name="DeleteAssignmentText" xml:space="preserve"><value>Запись и связанные напоминания будут удалены.</value></data>
+  <data name="SkipConfirmation" xml:space="preserve"><value>Назначение будет отмечено как пропущенное, напоминания будут отменены.</value></data>
+  <data name="ClinicalEditConfirmation" xml:space="preserve"><value>Изменение вернёт назначение в «Ожидается» и удалит прежнее время статуса.</value></data>
+  <data name="CompleteShiftConfirmation" xml:space="preserve"><value>Ожидающие назначения останутся в истории, будущие напоминания будут отменены.</value></data>
+  <data name="ProgressFormat" xml:space="preserve"><value>{0} из {1} выполнено · {2} пропущено · {3} просрочено</value></data>
+  <data name="HistoryStatsFormat" xml:space="preserve"><value>{0} назначений · {1} выполнено · {2} пропущено</value></data>
+  <data name="AssignmentCountFormat" xml:space="preserve"><value>{0} назначений</value></data>
+  <data name="DeleteShiftTitle" xml:space="preserve"><value>Удалить смену?</value></data>
+  <data name="DeleteShiftText" xml:space="preserve"><value>Все назначения, фото и напоминания этой смены будут удалены необратимо.</value></data>
+  <data name="KeyMissing" xml:space="preserve"><value>Ключ не настроен</value></data>
+  <data name="KeySaved" xml:space="preserve"><value>Ключ сохранён в защищённом хранилище</value></data>
+  <data name="DeleteKeyText" xml:space="preserve"><value>Локальный план сохранится. Импорт и проверка подключения станут недоступны.</value></data>
+  <data name="DeleteAllText" xml:space="preserve"><value>Смены, назначения, фото, настройки и ключ будут удалены необратимо. Аккаунт и уже обработанные GigaChat данные этой операцией не управляются.</value></data>
+  <data name="DataDeleted" xml:space="preserve"><value>Данные удалены. Перезапустите приложение.</value></data>
+  <data name="SyntheticPatientFormat" xml:space="preserve"><value>Тестовый Пациент {0:000}</value></data>
+  <data name="SyntheticProcedureFormat" xml:space="preserve"><value>Тестовая процедура {0}</value></data>
+  <data name="SyntheticComment" xml:space="preserve"><value>Только синтетические данные</value></data>
+  <data name="ReviewSummaryFormat" xml:space="preserve"><value>Найдено {0} назначений · {1} требуют исправления · {2} строк не разобраны</value></data>
+  <data name="DuplicateWarning" xml:space="preserve"><value>Возможный дубль: пациент, процедура и время совпадают. Удалите или оставьте явно.</value></data>
+  <data name="MissingTime" xml:space="preserve"><value>Время не прочитано</value></data>
+  <data name="MissingPatient" xml:space="preserve"><value>Пациент не прочитан</value></data>
+  <data name="MissingProcedure" xml:space="preserve"><value>Процедура не прочитана</value></data>
+  <data name="MissingUnparsedText" xml:space="preserve"><value>Текст строки не распознан</value></data>
+  <data name="DeletePageTitle" xml:space="preserve"><value>Удалить страницу?</value></data>
+  <data name="DeletePageText" xml:space="preserve"><value>Локальное фото и распознанные строки этой страницы будут удалены.</value></data>
+  <data name="PageProgressFormat" xml:space="preserve"><value>Страница {0} из {1}: {2}</value></data>
+  <data name="Uploading" xml:space="preserve"><value>загрузка</value></data>
+  <data name="Recognizing" xml:space="preserve"><value>распознавание</value></data>
+  <data name="ReadyForReview" xml:space="preserve"><value>Готово к проверке</value></data>
+  <data name="WaitingUpload" xml:space="preserve"><value>Ожидает отправки</value></data>
+  <data name="CancelledState" xml:space="preserve"><value>Отменено</value></data>
+  <data name="PageErrorFormat" xml:space="preserve"><value>Ошибка: {0}</value></data>
+  <data name="ImportStopped" xml:space="preserve"><value>Обработка остановлена. Готовые страницы сохранены.</value></data>
+  <data name="TransferTitle" xml:space="preserve"><value>Передача в GigaChat</value></data>
+  <data name="TransferConfirm" xml:space="preserve"><value>Передать и распознать</value></data>
+  <data name="NotificationChannel" xml:space="preserve"><value>Назначения смены</value></data>
+  <data name="NotificationChannelDescription" xml:space="preserve"><value>Предварительные и основные напоминания о назначениях</value></data>
+  <data name="PublicNotificationTitle" xml:space="preserve"><value>Есть назначение</value></data>
+  <data name="PublicNotificationText" xml:space="preserve"><value>Откройте приложение после разблокировки</value></data>
+  <data name="AdvanceNotificationFormat" xml:space="preserve"><value>Через {0} минут: {1}</value></data>
+  <data name="RoomShortFormat" xml:space="preserve"><value>палата {0}</value></data>
+  <data name="BedShortFormat" xml:space="preserve"><value>койка {0}</value></data>
+  <data name="NeedsAttention" xml:space="preserve"><value>Проверьте эту строку по исходному фото.</value></data>
+  <data name="RecognizeCountFormat" xml:space="preserve"><value>Распознать страниц: {0}</value></data>
+  <data name="ReplacePage" xml:space="preserve"><value>Переснять</value></data>
+  <data name="LockWithDeviceCredential" xml:space="preserve"><value>Требовать код или биометрию устройства при открытии</value></data>
+  <data name="UnlockApp" xml:space="preserve"><value>Разблокировать «Смену»</value></data>
+  <data name="UnlockDescription" xml:space="preserve"><value>Подтвердите код или биометрию устройства для просмотра данных смены.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>Разблокировать</value></data>
+  <data name="UnlockFailed" xml:space="preserve"><value>Данные скрыты. Разблокируйте приложение системным кодом или биометрией.</value></data>
+  <data name="DeviceCredentialUnavailable" xml:space="preserve"><value>Сначала настройте экран блокировки устройства в параметрах Android.</value></data>
+  <data name="FindPatientMatches" xml:space="preserve"><value>Найти совпадение пациента</value></data>
+  <data name="PatientMatchesTitle" xml:space="preserve"><value>Выберите найденного пациента, чтобы связать записи</value></data>
+</root>

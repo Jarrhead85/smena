@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/NurseShift.Core/NurseShift.Core.csproj" />
+  <Project Path="src/NurseShift.Infrastructure/NurseShift.Infrastructure.csproj" />
+  <Project Path="src/NurseShift.App/NurseShift.App.csproj" />
+  <Project Path="tests/NurseShift.Core.Tests/NurseShift.Core.Tests.csproj" />
+  <Project Path="tests/NurseShift.Infrastructure.Tests/NurseShift.Infrastructure.Tests.csproj" />
+</Solution>
