@@ -171,7 +171,8 @@ public sealed partial class ShiftViewModel : ViewModelBase
                 result = await _shiftService.CompleteShiftAsync(_shift.Id, true, CancellationToken.None);
         }
         Show(result);
-        await LoadAsync();
+        if (result.IsSuccess)
+            await LoadAsync();
     }
 
     [RelayCommand]

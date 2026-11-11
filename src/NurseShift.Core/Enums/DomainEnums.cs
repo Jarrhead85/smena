@@ -6,7 +6,7 @@ public enum ExecutionStatus { Pending, Done, Skipped }
 public enum ImportStatus { Preparing, Processing, Review, Confirmed, Cancelled }
 public enum ImageProcessingState { Pending, Uploading, Recognizing, Ready, Failed, Cancelled, Excluded }
 public enum ReminderKind { Advance, Due }
-public enum ScheduleState { Planned, Scheduled, Failed, Cancelled, Delivered, Dispatching, Posted }
+public enum ScheduleState { Planned, Scheduled, Failed, Cancelled, Delivered, Dispatching, Posted, RecoveryPending }
 public enum ThemePreference { System, Light, Dark }
 
 public enum SafeErrorCode

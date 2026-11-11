@@ -331,15 +331,16 @@ public sealed class ImportService(
             return new OperationResult(SafeErrorCode.Validation);
         var settings = await settingsStore.GetAsync(cancellationToken);
         var now = clock.UtcNow;
+        var draftId = Guid.NewGuid();
         context.Assignments.Add(new Assignment
         {
-            Id = Guid.NewGuid(), ShiftId = session.ShiftId, SourceImageId = sourceImageId, SourceExcerpt = sourceExcerpt,
+            Id = draftId, ShiftId = session.ShiftId, SourceImageId = sourceImageId, SourceExcerpt = sourceExcerpt,
             ReviewState = ReviewState.Draft, ExecutionStatus = ExecutionStatus.Pending, NeedsReview = true,
             ReviewReason = SafeErrorCode.Validation.ToString(), AdvanceLeadMinutes = settings.AdvanceLeadMinutes,
             CreatedAtUtc = now, UpdatedAtUtc = now, RowVersion = 1
         });
         await context.SaveChangesAsync(cancellationToken);
-        return OperationResult.Success();
+        return OperationResult.Success(draftId);
     }
 
     public async Task<OperationResult> UpdateDraftAsync(Assignment draft, CancellationToken cancellationToken)
@@ -394,6 +395,8 @@ public sealed class ImportService(
         var page = await context.SourceImages.SingleOrDefaultAsync(item => item.Id == imageId, cancellationToken);
         if (page is null)
             return new OperationResult(SafeErrorCode.ImportNotFound);
+        if (page.ProcessingState == ImageProcessingState.Excluded)
+            return new OperationResult(SafeErrorCode.Validation);
         var lines = ImportValidator.ReadUnparsedLines(page).ToList();
         if (index < 0 || index >= lines.Count)
             return new OperationResult(SafeErrorCode.Validation);

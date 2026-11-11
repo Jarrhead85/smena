@@ -5,6 +5,8 @@ namespace NurseShift.Core.Services;
 
 public sealed class ReminderPlanner
 {
+    public static readonly TimeSpan RecoveryWindow = TimeSpan.FromMinutes(15);
+
     public IReadOnlyList<Reminder> CreateFuture(Assignment assignment, DateTimeOffset now)
     {
         if (assignment.ReviewState != ReviewState.Confirmed ||

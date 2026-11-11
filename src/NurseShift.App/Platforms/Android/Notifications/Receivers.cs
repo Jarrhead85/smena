@@ -43,7 +43,9 @@ public sealed class ReminderReceiver : BroadcastReceiver
                 reminder.Assignment.Shift.Status != ShiftStatus.Active)
                 return;
             var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
-            var claimed = await db.Reminders.Where(item => item.Id == reminderId && item.ScheduleState == ScheduleState.Scheduled)
+            var claimed = await db.Reminders.Where(item => item.Id == reminderId && item.ScheduleState == ScheduleState.Scheduled &&
+                item.Assignment!.ReviewState == ReviewState.Confirmed && item.Assignment.ExecutionStatus == ExecutionStatus.Pending &&
+                item.Assignment.Shift!.Status == ShiftStatus.Active)
                 .ExecuteUpdateAsync(item => item.SetProperty(r => r.ScheduleState, ScheduleState.Dispatching)
                     .SetProperty(r => r.UpdatedAtUtc, now));
             if (claimed == 0)
@@ -51,6 +53,14 @@ public sealed class ReminderReceiver : BroadcastReceiver
             reminder.ScheduleState = ScheduleState.Dispatching;
             reminder.UpdatedAtUtc = now;
             var settings = await scope.ServiceProvider.GetRequiredService<ISettingsStore>().GetAsync(CancellationToken.None);
+            await db.Entry(reminder).ReloadAsync();
+            if (reminder.ScheduleState != ScheduleState.Dispatching)
+                return;
+            await db.Entry(reminder.Assignment).ReloadAsync();
+            await db.Entry(reminder.Assignment.Shift).ReloadAsync();
+            if (reminder.Assignment.ReviewState != ReviewState.Confirmed ||
+                reminder.Assignment.ExecutionStatus != ExecutionStatus.Pending || reminder.Assignment.Shift.Status != ShiftStatus.Active)
+                return;
             NotificationPresenter.Show(reminder, settings);
             reminder.ScheduleState = ScheduleState.Posted;
             reminder.SafeErrorCode = null;
@@ -131,10 +141,8 @@ public sealed class RescheduleReceiver : BroadcastReceiver
             using var scope = AndroidServices.Services?.CreateScope();
             if (scope is null)
                 return;
-            var factory = scope.ServiceProvider.GetRequiredService<INurseShiftDbContextFactory>();
-            await using var db = await factory.CreateAsync(CancellationToken.None);
-            var ids = await db.Reminders.Where(item => item.ScheduleState != ScheduleState.Cancelled).Select(item => item.Id).ToListAsync();
-            await db.Reminders.Where(item => ids.Contains(item.Id)).ExecuteUpdateAsync(item => item.SetProperty(r => r.ScheduleState, ScheduleState.Planned));
+            if (intent?.Action == Intent.ActionBootCompleted)
+                await scope.ServiceProvider.GetRequiredService<DatabaseInitializer>().InitializeAsync(CancellationToken.None);
             await scope.ServiceProvider.GetRequiredService<IReminderScheduler>().SynchronizeAllFutureAsync(CancellationToken.None);
         }
         catch (Exception)

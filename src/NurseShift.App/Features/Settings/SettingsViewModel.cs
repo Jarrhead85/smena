@@ -47,19 +47,43 @@ public sealed partial class SettingsViewModel(
         await RefreshReminderAvailabilityAsync();
     }
 
-    private async Task RefreshReminderAvailabilityAsync()
+    private bool _availabilityRefreshInProgress;
+
+    public async Task RefreshReminderAvailabilityOnResumeAsync()
     {
-        var availability = await reminderScheduler.GetAvailabilityAsync(CancellationToken.None);
-        HasNotificationIssue = !availability.NotificationsAllowed || !availability.NotificationChannelEnabled;
-        HasExactAlarmIssue = !availability.ExactAlarmsAllowed;
-        ReminderStatus = string.Join("\n", new[]
+        try
         {
-            UiStrings.Get(availability.NotificationsAllowed ? "NotificationsEnabled" : "NotificationsDisabled"),
-            UiStrings.Get(availability.NotificationChannelEnabled ? "NotificationChannelEnabled" : "NotificationChannelDisabled"),
-            UiStrings.Get(availability.ExactAlarmsAllowed ? "ExactAlarmsEnabled" : "ExactAlarmsDisabled")
-        });
-        if (availability.IsAvailable)
-            await reminderScheduler.SynchronizeAllFutureAsync(CancellationToken.None);
+            await RefreshReminderAvailabilityAsync(synchronize: false);
+        }
+        catch (Exception)
+        {
+            Show(SafeErrorCode.SchedulingFailed);
+        }
+    }
+
+    private async Task RefreshReminderAvailabilityAsync(bool synchronize = true)
+    {
+        if (_availabilityRefreshInProgress)
+            return;
+        _availabilityRefreshInProgress = true;
+        try
+        {
+            var availability = await reminderScheduler.GetAvailabilityAsync(CancellationToken.None);
+            HasNotificationIssue = !availability.NotificationsAllowed || !availability.NotificationChannelEnabled;
+            HasExactAlarmIssue = !availability.ExactAlarmsAllowed;
+            ReminderStatus = string.Join("\n", new[]
+            {
+                UiStrings.Get(availability.NotificationsAllowed ? "NotificationsEnabled" : "NotificationsDisabled"),
+                UiStrings.Get(availability.NotificationChannelEnabled ? "NotificationChannelEnabled" : "NotificationChannelDisabled"),
+                UiStrings.Get(availability.ExactAlarmsAllowed ? "ExactAlarmsEnabled" : "ExactAlarmsDisabled")
+            });
+            if (synchronize && availability.IsAvailable)
+                await reminderScheduler.SynchronizeAllFutureAsync(CancellationToken.None);
+        }
+        finally
+        {
+            _availabilityRefreshInProgress = false;
+        }
     }
 
     [RelayCommand]

@@ -19,9 +19,10 @@
             </BindableLayout.ItemTemplate>
           </FlexLayout>
           <Image Source="{Binding PageImage}" HeightRequest="180" Aspect="AspectFit" SemanticProperties.Description="{x:Static res:UiStrings.PhotoTitle}" />
+          <Label Text="{x:Static res:UiStrings.ExcludedPageExplanation}" IsVisible="{Binding IsSelectedPageExcluded}" Style="{StaticResource SecondaryText}" />
           <Button Text="{x:Static res:UiStrings.Retry}" Command="{Binding RetryCommand}" IsVisible="{Binding HasFailedPages}" />
           <Button Text="{x:Static res:UiStrings.ExcludePage}" Command="{Binding ExcludePageCommand}" IsVisible="{Binding CanExcludeSelectedPage}" Style="{StaticResource SecondaryButton}" />
-          <Button Text="{x:Static res:UiStrings.ViewPhoto}" Command="{Binding ViewPhotoCommand}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="{x:Static res:UiStrings.ViewPhoto}" Command="{Binding ViewPhotoCommand}" IsVisible="{Binding HasSelectedPage}" Style="{StaticResource SecondaryButton}" />
           <Button Text="{x:Static res:UiStrings.AddManual}" Command="{Binding AddManualCommand}" Style="{StaticResource SecondaryButton}" />
         </VerticalStackLayout>
       </CollectionView.Header>

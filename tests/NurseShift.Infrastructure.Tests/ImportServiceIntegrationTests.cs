@@ -89,9 +89,11 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         var session = await _imports.CreateAsync(shiftId, CancellationToken.None);
         await AddPageAsync(session.Id);
         await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
-        Assert.True((await _imports.AddDraftAsync(session.Id, null, null, CancellationToken.None)).IsSuccess);
+        var added = await _imports.AddDraftAsync(session.Id, null, null, CancellationToken.None);
+        Assert.True(added.IsSuccess);
         var review = await _imports.GetAsync(session.Id, CancellationToken.None);
         var draft = Assert.Single(review!.Assignments);
+        Assert.Equal(draft.Id, added.EntityId);
         draft.PatientName = "Тестовый Пациент 002";
         draft.Procedure = "Тестовая ручная процедура";
         draft.DueLocal = new DateTime(2026, 11, 10, 23, 30, 0);
@@ -204,6 +206,7 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         review = await _imports.GetAsync(session.Id, CancellationToken.None);
         Assert.Equal(ImageProcessingState.Excluded, Assert.Single(review!.Pages).ProcessingState);
         Assert.Empty(review.Assignments);
+        Assert.Equal(SafeErrorCode.Validation, (await _imports.ExcludeUnparsedLineAsync(imageId, 0, CancellationToken.None)).ErrorCode);
         Assert.Equal(SafeErrorCode.ConfirmationRequired,
             (await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, false, CancellationToken.None)).ErrorCode);
         Assert.Empty(_scheduler.Synchronized);

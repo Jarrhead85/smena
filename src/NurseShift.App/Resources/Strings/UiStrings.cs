@@ -66,6 +66,7 @@ public static class UiStrings
     public static string ExcludeLine => Get(nameof(ExcludeLine));
     public static string ExcludePage => Get(nameof(ExcludePage));
     public static string ViewPhoto => Get(nameof(ViewPhoto));
+    public static string ExcludedPageExplanation => Get(nameof(ExcludedPageExplanation));
     public static string GigaChat => Get(nameof(GigaChat));
     public static string AuthorizationKey => Get(nameof(AuthorizationKey));
     public static string SaveKey => Get(nameof(SaveKey));

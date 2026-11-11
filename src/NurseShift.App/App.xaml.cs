@@ -1,4 +1,5 @@
 using NurseShift.App.Features.Onboarding;
+using NurseShift.App.Features.Settings;
 using NurseShift.App.Resources.Strings;
 using NurseShift.Core.Enums;
 using NurseShift.Core.Interfaces;
@@ -73,6 +74,8 @@ public partial class App : Application
         }
         if (_initialized && !_unlocked)
             await EnsureUnlockedAsync();
+        if (_initialized && _unlocked && Shell.Current?.CurrentPage is SettingsPage settingsPage)
+            await settingsPage.RefreshReminderAvailabilityOnResumeAsync();
     }
 
     private async Task EnsureUnlockedAsync()

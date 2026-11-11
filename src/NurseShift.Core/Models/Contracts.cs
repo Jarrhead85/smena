@@ -2,10 +2,11 @@ using NurseShift.Core.Enums;
 
 namespace NurseShift.Core.Models;
 
-public sealed record OperationResult(SafeErrorCode ErrorCode = SafeErrorCode.None)
+public sealed record OperationResult(SafeErrorCode ErrorCode = SafeErrorCode.None, Guid? EntityId = null)
 {
     public bool IsSuccess => ErrorCode == SafeErrorCode.None;
     public static OperationResult Success() => new();
+    public static OperationResult Success(Guid entityId) => new(SafeErrorCode.None, entityId);
 }
 
 public sealed record AssignmentInput(

@@ -130,22 +130,59 @@ public sealed class ShiftServiceIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task Initialize_InterruptedNotificationDispatch_ReturnsToScheduled()
+    public async Task Initialize_InterruptedFutureNotification_ReturnsToPlanned()
+    {
+        var reminderId = await CreateInterruptedReminderAsync();
+        _clock.UtcNow = new DateTimeOffset(2026, 11, 10, 19, 0, 0, TimeSpan.Zero);
+
+        await new DatabaseInitializer(_factory, _clock).InitializeAsync(CancellationToken.None);
+
+        await using var verification = await _factory.CreateAsync(CancellationToken.None);
+        var reminder = await verification.Reminders.SingleAsync(item => item.Id == reminderId);
+        Assert.Equal(ScheduleState.Planned, reminder.ScheduleState);
+        Assert.Null(reminder.SafeErrorCode);
+    }
+
+    [Fact]
+    public async Task Initialize_InterruptedRecentNotification_RequestsSingleRecovery()
+    {
+        var reminderId = await CreateInterruptedReminderAsync();
+        await using (var context = await _factory.CreateAsync(CancellationToken.None))
+            _clock.UtcNow = (await context.Reminders.SingleAsync(item => item.Id == reminderId)).ScheduledAtUtc.AddMinutes(5);
+
+        await new DatabaseInitializer(_factory, _clock).InitializeAsync(CancellationToken.None);
+
+        await using var verification = await _factory.CreateAsync(CancellationToken.None);
+        var reminder = await verification.Reminders.SingleAsync(item => item.Id == reminderId);
+        Assert.Equal(ScheduleState.RecoveryPending, reminder.ScheduleState);
+        Assert.Null(reminder.SafeErrorCode);
+    }
+
+    [Fact]
+    public async Task Initialize_InterruptedExpiredNotification_MarksFailureInsteadOfMassDelivery()
+    {
+        var reminderId = await CreateInterruptedReminderAsync();
+        await using (var context = await _factory.CreateAsync(CancellationToken.None))
+            _clock.UtcNow = (await context.Reminders.SingleAsync(item => item.Id == reminderId)).ScheduledAtUtc.AddMinutes(16);
+
+        await new DatabaseInitializer(_factory, _clock).InitializeAsync(CancellationToken.None);
+
+        await using var verification = await _factory.CreateAsync(CancellationToken.None);
+        var reminder = await verification.Reminders.SingleAsync(item => item.Id == reminderId);
+        Assert.Equal(ScheduleState.Failed, reminder.ScheduleState);
+        Assert.Equal(SafeErrorCode.SchedulingFailed.ToString(), reminder.SafeErrorCode);
+    }
+
+    private async Task<Guid> CreateInterruptedReminderAsync()
     {
         var shiftId = await CreateShiftAsync();
         await _service.AddAssignmentAsync(shiftId, Input(new DateTime(2026, 11, 10, 23, 30, 0)), CancellationToken.None);
         var reminderId = (await _service.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments.Single().Reminders.First().Id;
-        await using (var context = await _factory.CreateAsync(CancellationToken.None))
-        {
-            var reminder = await context.Reminders.SingleAsync(item => item.Id == reminderId);
-            reminder.ScheduleState = ScheduleState.Dispatching;
-            await context.SaveChangesAsync(CancellationToken.None);
-        }
-
-        await new DatabaseInitializer(_factory).InitializeAsync(CancellationToken.None);
-
-        await using var verification = await _factory.CreateAsync(CancellationToken.None);
-        Assert.Equal(ScheduleState.Scheduled, (await verification.Reminders.SingleAsync(item => item.Id == reminderId)).ScheduleState);
+        await using var context = await _factory.CreateAsync(CancellationToken.None);
+        var reminder = await context.Reminders.SingleAsync(item => item.Id == reminderId);
+        reminder.ScheduleState = ScheduleState.Dispatching;
+        await context.SaveChangesAsync(CancellationToken.None);
+        return reminderId;
     }
 
     private async Task<Guid> CreateShiftAsync()

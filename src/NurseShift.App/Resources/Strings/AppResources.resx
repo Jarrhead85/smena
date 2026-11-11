@@ -161,6 +161,7 @@
   <data name="ExcludePageTitle" xml:space="preserve"><value>Исключить страницу {0}?</value></data>
   <data name="ExcludePageText" xml:space="preserve"><value>Все черновики этой страницы будут удалены. Страница не попадёт в план смены.</value></data>
   <data name="ExcludedState" xml:space="preserve"><value>Исключена пользователем</value></data>
+  <data name="ExcludedPageExplanation" xml:space="preserve"><value>Страница исключена из импорта. Её черновики удалены. Можно просмотреть фото или добавить назначение вручную без привязки к этой странице.</value></data>
   <data name="EmptyImportTitle" xml:space="preserve"><value>Завершить импорт без назначений?</value></data>
   <data name="EmptyImportText" xml:space="preserve"><value>После проверки не осталось назначений. В план смены ничего не будет добавлено.</value></data>
   <data name="ConfirmEmptyImport" xml:space="preserve"><value>Завершить без назначений</value></data>

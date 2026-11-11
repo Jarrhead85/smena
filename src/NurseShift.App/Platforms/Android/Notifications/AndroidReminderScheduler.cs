@@ -57,16 +57,19 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
 
         try
         {
+            var now = clock.UtcNow;
+            var recoveryCutoff = now - ReminderPlanner.RecoveryWindow;
             var alarmManager = (AlarmManager?)_context.GetSystemService(Context.AlarmService) ?? throw new InvalidOperationException();
-            foreach (var reminder in assignment.Reminders.Where(item => item.ScheduledAtUtc > clock.UtcNow &&
-                         item.ScheduleState is ScheduleState.Planned or ScheduleState.Failed or ScheduleState.Scheduled))
+            foreach (var reminder in assignment.Reminders.Where(item =>
+                         item.ScheduleState is ScheduleState.Planned or ScheduleState.Failed or ScheduleState.Scheduled or ScheduleState.RecoveryPending &&
+                         (item.ScheduledAtUtc > now || item.ScheduleState == ScheduleState.RecoveryPending && item.ScheduledAtUtc >= recoveryCutoff)))
             {
                 Cancel(alarmManager, assignmentId, reminder.Kind);
                 var pendingIntent = CreateReminderIntent(reminder, PendingIntentFlags.UpdateCurrent);
                 alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, reminder.ScheduledAtUtc.ToUnixTimeMilliseconds(), pendingIntent);
                 reminder.ScheduleState = ScheduleState.Scheduled;
                 reminder.SafeErrorCode = null;
-                reminder.UpdatedAtUtc = clock.UtcNow;
+                reminder.UpdatedAtUtc = now;
             }
             await context.SaveChangesAsync(cancellationToken);
             return OperationResult.Success();
@@ -81,14 +84,27 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
     public async Task<OperationResult> SynchronizeAllFutureAsync(CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateAsync(cancellationToken);
+        var now = clock.UtcNow;
+        var recoveryCutoff = now - ReminderPlanner.RecoveryWindow;
         var candidates = await context.Assignments.AsNoTracking().Where(item => item.ReviewState == ReviewState.Confirmed &&
             item.ExecutionStatus == ExecutionStatus.Pending && item.Shift.Status == ShiftStatus.Active)
-            .Select(item => new { item.Id, item.DueAtUtc }).ToListAsync(cancellationToken);
-        var now = clock.UtcNow;
-        var ids = candidates.Where(item => item.DueAtUtc > now).Select(item => item.Id);
+            .Select(item => new
+            {
+                item.Id,
+                item.DueAtUtc,
+                RecoveryTimes = item.Reminders.Where(reminder => reminder.ScheduleState == ScheduleState.RecoveryPending)
+                    .Select(reminder => reminder.ScheduledAtUtc).ToArray()
+            }).ToListAsync(cancellationToken);
+        var ids = candidates.Where(item => item.DueAtUtc > now || item.RecoveryTimes.Any(time => time >= recoveryCutoff))
+            .Select(item => item.Id);
+        OperationResult? failure = null;
         foreach (var id in ids)
-            await SynchronizeAssignmentAsync(id, cancellationToken);
-        return OperationResult.Success();
+        {
+            var result = await SynchronizeAssignmentAsync(id, cancellationToken);
+            if (!result.IsSuccess)
+                failure ??= result;
+        }
+        return failure ?? OperationResult.Success();
     }
 
     public Task CancelForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken)
@@ -207,7 +223,8 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
 
     private async Task MarkFailedAsync(NurseShiftDbContext context, IEnumerable<Reminder> reminders, SafeErrorCode code, CancellationToken cancellationToken)
     {
-        foreach (var reminder in reminders)
+        foreach (var reminder in reminders.Where(item => item.ScheduleState is ScheduleState.Planned or ScheduleState.Scheduled or
+                     ScheduleState.Failed or ScheduleState.RecoveryPending))
         {
             reminder.ScheduleState = ScheduleState.Failed;
             reminder.SafeErrorCode = code.ToString();

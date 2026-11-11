@@ -23,7 +23,7 @@
         <Grid ColumnDefinitions="*,*" ColumnSpacing="8"><Button Text="{x:Static res:UiStrings.Done}" Command="{Binding Source={x:Reference Feed}, Path=BindingContext.MarkDoneCommand}" CommandParameter="{Binding .}" IsVisible="{Binding IsPending}" /><Button Grid.Column="1" Text="{x:Static res:UiStrings.Details}" Command="{Binding Source={x:Reference Feed}, Path=BindingContext.DetailsCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" /></Grid>
         <BoxView />
       </VerticalStackLayout></DataTemplate></CollectionView.ItemTemplate>
-      <CollectionView.Footer><Button Text="{x:Static res:UiStrings.CompleteShift}" Command="{Binding CompleteShiftCommand}" Style="{StaticResource SecondaryButton}" Margin="16,24,16,16" /></CollectionView.Footer>
+      <CollectionView.Footer><Button Text="{x:Static res:UiStrings.CompleteShift}" Command="{Binding CompleteCommand}" Style="{StaticResource SecondaryButton}" Margin="16,24,16,16" /></CollectionView.Footer>
     </CollectionView>
     <Label Grid.Row="1" Text="{Binding ErrorMessage}" Padding="16" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullConverter}}" />
   </Grid>
