@@ -234,10 +234,121 @@ public sealed class GigaChatRecognitionServiceTests : IDisposable
         Assert.Equal(3, oauthCount);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, 2)]
+    [InlineData(HttpStatusCode.InternalServerError, 1)]
+    public async Task UploadRetry_ReopensImageAndSendsSameBytes(HttpStatusCode firstFailure, int expectedOAuthCount)
+    {
+        var oauthCount = 0;
+        var uploadCount = 0;
+        var payloads = new List<byte[]>();
+        var streams = new List<TrackingMemoryStream>();
+        using var handler = new RecordingHandler(async request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("/oauth", StringComparison.Ordinal))
+            {
+                oauthCount++;
+                return TokenResponse("synthetic-token");
+            }
+            if (path.EndsWith("/files", StringComparison.Ordinal))
+            {
+                uploadCount++;
+                var multipart = Assert.IsType<MultipartFormDataContent>(request.Content);
+                payloads.Add(await multipart.Last().ReadAsByteArrayAsync());
+                return uploadCount == 1 ? new HttpResponseMessage(firstFailure) : Json("{\"id\":\"synthetic-remote-file\"}");
+            }
+            if (path.EndsWith("/chat/completions", StringComparison.Ordinal))
+                return ChatResponse(ValidRecognition);
+            if (path.EndsWith("/delete", StringComparison.Ordinal))
+                return Json("{\"deleted\":true}");
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        });
+
+        var result = await CreateService(handler).RecognizeAsync(Request(Guid.NewGuid(), streams), CancellationToken.None);
+
+        Assert.Single(result.Assignments);
+        Assert.Equal(2, uploadCount);
+        Assert.Equal(expectedOAuthCount, oauthCount);
+        Assert.Equal(payloads[0], payloads[1]);
+        Assert.Equal(2, streams.Count);
+        Assert.All(streams, stream => Assert.True(stream.IsDisposed));
+    }
+
+    [Fact]
+    public async Task NetworkRetry_ReopensImageAndDisposesEveryAttempt()
+    {
+        var uploadCount = 0;
+        var streams = new List<TrackingMemoryStream>();
+        using var handler = new RecordingHandler(async request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("/oauth", StringComparison.Ordinal))
+                return TokenResponse("synthetic-token");
+            if (path.EndsWith("/files", StringComparison.Ordinal))
+            {
+                uploadCount++;
+                var multipart = Assert.IsType<MultipartFormDataContent>(request.Content);
+                Assert.Equal(new byte[] { 1, 2, 3, 4 }, await multipart.Last().ReadAsByteArrayAsync());
+                if (uploadCount == 1)
+                    throw new HttpRequestException("Synthetic network failure");
+                return Json("{\"id\":\"synthetic-remote-file\"}");
+            }
+            if (path.EndsWith("/chat/completions", StringComparison.Ordinal))
+                return ChatResponse(ValidRecognition);
+            if (path.EndsWith("/delete", StringComparison.Ordinal))
+                return Json("{\"deleted\":true}");
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        });
+
+        var result = await CreateService(handler).RecognizeAsync(Request(Guid.NewGuid(), streams), CancellationToken.None);
+
+        Assert.Single(result.Assignments);
+        Assert.Equal(2, uploadCount);
+        Assert.Equal(2, streams.Count);
+        Assert.All(streams, stream => Assert.True(stream.IsDisposed));
+    }
+
+    [Fact]
+    public async Task CancellationDuringRetryDelay_DoesNotStartAnotherUpload()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var uploadCount = 0;
+        var streams = new List<TrackingMemoryStream>();
+        using var handler = new RecordingHandler(async request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path.EndsWith("/oauth", StringComparison.Ordinal))
+                return TokenResponse("synthetic-token");
+            if (path.EndsWith("/files", StringComparison.Ordinal))
+            {
+                uploadCount++;
+                var multipart = Assert.IsType<MultipartFormDataContent>(request.Content);
+                await multipart.Last().ReadAsByteArrayAsync();
+                cancellation.Cancel();
+                var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+                response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(60));
+                return response;
+            }
+            return new HttpResponseMessage(HttpStatusCode.NotFound);
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            CreateService(handler).RecognizeAsync(Request(Guid.NewGuid(), streams), cancellation.Token));
+
+        Assert.Equal(1, uploadCount);
+        Assert.All(streams, stream => Assert.True(stream.IsDisposed));
+    }
+
     private GigaChatRecognitionService CreateService(RecordingHandler handler) => new(
         new HttpClient(handler), new GigaChatAuthClient(new HttpClient(handler), _secrets), _factory, _settings);
 
-    private RecognitionRequest Request(Guid imageId) => new(imageId, new MemoryStream([1, 2, 3, 4]), new Shift
+    private RecognitionRequest Request(Guid imageId, List<TrackingMemoryStream>? streams = null) => new(imageId, _ =>
+    {
+        var stream = new TrackingMemoryStream([1, 2, 3, 4]);
+        streams?.Add(stream);
+        return ValueTask.FromResult<Stream>(stream);
+    }, new Shift
     {
         Id = Guid.NewGuid(),
         StartLocal = new DateTime(2026, 11, 10, 22, 0, 0),
@@ -288,6 +399,17 @@ public sealed class GigaChatRecognitionServiceTests : IDisposable
     public void Dispose()
     {
         try { Directory.Delete(_directory, true); } catch (IOException) { }
+    }
+}
+
+internal sealed class TrackingMemoryStream(byte[] content) : MemoryStream(content)
+{
+    public bool IsDisposed { get; private set; }
+
+    protected override void Dispose(bool disposing)
+    {
+        IsDisposed = true;
+        base.Dispose(disposing);
     }
 }
 

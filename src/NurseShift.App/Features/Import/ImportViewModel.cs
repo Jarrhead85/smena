@@ -21,6 +21,7 @@ public sealed class ImportPageRow(SourceImage page)
         ImageProcessingState.Uploading => UiStrings.Get("Uploading"),
         ImageProcessingState.Recognizing => UiStrings.Get("Recognizing"),
         ImageProcessingState.Cancelled => UiStrings.Get("CancelledState"),
+        ImageProcessingState.Excluded => UiStrings.Get("ExcludedState"),
         _ => UiStrings.Get("WaitingUpload")
     };
 }

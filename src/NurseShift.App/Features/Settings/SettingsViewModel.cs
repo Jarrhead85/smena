@@ -27,6 +27,9 @@ public sealed partial class SettingsViewModel(
     [ObservableProperty] private bool privateNotifications = true;
     [ObservableProperty] private bool lockWithDeviceCredential;
     [ObservableProperty] private string? successMessage;
+    [ObservableProperty] private string reminderStatus = string.Empty;
+    [ObservableProperty] private bool hasNotificationIssue;
+    [ObservableProperty] private bool hasExactAlarmIssue;
 
     public async Task LoadAsync()
     {
@@ -41,6 +44,22 @@ public sealed partial class SettingsViewModel(
         LockWithDeviceCredential = settings.LockWithDeviceCredential;
         KeyState = await secretStore.GetAsync("gigachat.authorization_key", CancellationToken.None) is null ? UiStrings.Get("KeyMissing") : UiStrings.Get("KeySaved");
         AuthorizationKey = string.Empty;
+        await RefreshReminderAvailabilityAsync();
+    }
+
+    private async Task RefreshReminderAvailabilityAsync()
+    {
+        var availability = await reminderScheduler.GetAvailabilityAsync(CancellationToken.None);
+        HasNotificationIssue = !availability.NotificationsAllowed || !availability.NotificationChannelEnabled;
+        HasExactAlarmIssue = !availability.ExactAlarmsAllowed;
+        ReminderStatus = string.Join("\n", new[]
+        {
+            UiStrings.Get(availability.NotificationsAllowed ? "NotificationsEnabled" : "NotificationsDisabled"),
+            UiStrings.Get(availability.NotificationChannelEnabled ? "NotificationChannelEnabled" : "NotificationChannelDisabled"),
+            UiStrings.Get(availability.ExactAlarmsAllowed ? "ExactAlarmsEnabled" : "ExactAlarmsDisabled")
+        });
+        if (availability.IsAvailable)
+            await reminderScheduler.SynchronizeAllFutureAsync(CancellationToken.None);
     }
 
     [RelayCommand]
@@ -116,11 +135,48 @@ public sealed partial class SettingsViewModel(
     }
 
     [RelayCommand]
-    private async Task OpenReminderSettingsAsync()
+    private async Task ConfigureNotificationsAsync()
     {
-        await reminderScheduler.RequestNotificationPermissionAsync(CancellationToken.None);
-        await reminderScheduler.OpenExactAlarmSettingsAsync(CancellationToken.None);
-        await reminderScheduler.SynchronizeAllFutureAsync(CancellationToken.None);
+        if (IsBusy)
+            return;
+        IsBusy = true;
+        try
+        {
+            var availability = await reminderScheduler.GetAvailabilityAsync(CancellationToken.None);
+            if (!availability.NotificationsAllowed)
+                await reminderScheduler.RequestNotificationPermissionAsync(CancellationToken.None);
+            availability = await reminderScheduler.GetAvailabilityAsync(CancellationToken.None);
+            if (!availability.NotificationsAllowed || !availability.NotificationChannelEnabled)
+                await reminderScheduler.OpenNotificationSettingsAsync(CancellationToken.None);
+            await RefreshReminderAvailabilityAsync();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenExactAlarmSettingsAsync() => await reminderScheduler.OpenExactAlarmSettingsAsync(CancellationToken.None);
+
+    [RelayCommand]
+    private async Task ShowTestNotificationAsync()
+    {
+        if (IsBusy)
+            return;
+        IsBusy = true;
+        SuccessMessage = null;
+        try
+        {
+            var result = await reminderScheduler.ShowTestNotificationAsync(CancellationToken.None);
+            Show(result);
+            if (result.IsSuccess)
+                SuccessMessage = UiStrings.Get("TestNotificationSent");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]

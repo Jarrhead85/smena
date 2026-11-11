@@ -64,6 +64,7 @@ public static class UiStrings
     public static string ConfirmAdd => Get(nameof(ConfirmAdd));
     public static string UnparsedLines => Get(nameof(UnparsedLines));
     public static string ExcludeLine => Get(nameof(ExcludeLine));
+    public static string ExcludePage => Get(nameof(ExcludePage));
     public static string ViewPhoto => Get(nameof(ViewPhoto));
     public static string GigaChat => Get(nameof(GigaChat));
     public static string AuthorizationKey => Get(nameof(AuthorizationKey));
@@ -79,6 +80,8 @@ public static class UiStrings
     public static string PrivateNotifications => Get(nameof(PrivateNotifications));
     public static string DeleteAll => Get(nameof(DeleteAll));
     public static string ReminderPermissions => Get(nameof(ReminderPermissions));
+    public static string NotificationSettings => Get(nameof(NotificationSettings));
+    public static string SendTestNotification => Get(nameof(SendTestNotification));
     public static string ConnectionOk => Get(nameof(ConnectionOk));
     public static string Saved => Get(nameof(Saved));
     public static string Overdue => Get(nameof(Overdue));

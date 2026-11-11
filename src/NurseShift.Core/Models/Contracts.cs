@@ -49,7 +49,7 @@ public sealed record RecognitionResult(
 
 public sealed record RecognitionRequest(
     Guid SourceImageId,
-    Stream Image,
+    Func<CancellationToken, ValueTask<Stream>> OpenImage,
     Shift Shift,
     string Model,
     string Scope);
@@ -81,7 +81,7 @@ public sealed record AppSettings(
         null);
 }
 
-public sealed record ReminderAvailability(bool NotificationsAllowed, bool ExactAlarmsAllowed)
+public sealed record ReminderAvailability(bool NotificationsAllowed, bool NotificationChannelEnabled, bool ExactAlarmsAllowed)
 {
-    public bool IsAvailable => NotificationsAllowed && ExactAlarmsAllowed;
+    public bool IsAvailable => NotificationsAllowed && NotificationChannelEnabled && ExactAlarmsAllowed;
 }

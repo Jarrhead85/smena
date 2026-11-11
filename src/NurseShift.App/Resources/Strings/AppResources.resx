@@ -98,6 +98,7 @@
   <data name="Error_AmbiguousTime" xml:space="preserve"><value>Время неоднозначно из-за перевода часов. Уточните его вручную.</value></data>
   <data name="Error_UnparsedLinesRemain" xml:space="preserve"><value>Обработайте каждую неразобранную строку: перенесите вручную или подтвердите исключение.</value></data>
   <data name="Error_ConcurrentUpdate" xml:space="preserve"><value>Запись изменилась. Обновите экран и повторите действие.</value></data>
+  <data name="Error_PagesNotReady" xml:space="preserve"><value>Не все страницы обработаны. Повторите распознавание или явно исключите блокирующие страницы.</value></data>
   <data name="Error_NetworkUnavailable" xml:space="preserve"><value>Нет подключения к GigaChat. Проверьте интернет и повторите; черновик сохранён.</value></data>
   <data name="Error_Timeout" xml:space="preserve"><value>GigaChat не ответил вовремя. Повторите запрос позже.</value></data>
   <data name="Error_TlsValidationFailed" xml:space="preserve"><value>Безопасное соединение не установлено. Проверьте сертификаты и настройки сети.</value></data>
@@ -154,6 +155,15 @@
   <data name="SyntheticProcedureFormat" xml:space="preserve"><value>Тестовая процедура {0}</value></data>
   <data name="SyntheticComment" xml:space="preserve"><value>Только синтетические данные</value></data>
   <data name="ReviewSummaryFormat" xml:space="preserve"><value>Найдено {0} назначений · {1} требуют исправления · {2} строк не разобраны</value></data>
+  <data name="PageSummaryFormat" xml:space="preserve"><value>Страницы: {0} обработано · {1} с ошибкой · {2} исключено</value></data>
+  <data name="BlockingPages" xml:space="preserve"><value>Подтверждение заблокировано страницами: {0}. Повторите распознавание или явно исключите каждую страницу.</value></data>
+  <data name="ExcludePage" xml:space="preserve"><value>Исключить страницу</value></data>
+  <data name="ExcludePageTitle" xml:space="preserve"><value>Исключить страницу {0}?</value></data>
+  <data name="ExcludePageText" xml:space="preserve"><value>Все черновики этой страницы будут удалены. Страница не попадёт в план смены.</value></data>
+  <data name="ExcludedState" xml:space="preserve"><value>Исключена пользователем</value></data>
+  <data name="EmptyImportTitle" xml:space="preserve"><value>Завершить импорт без назначений?</value></data>
+  <data name="EmptyImportText" xml:space="preserve"><value>После проверки не осталось назначений. В план смены ничего не будет добавлено.</value></data>
+  <data name="ConfirmEmptyImport" xml:space="preserve"><value>Завершить без назначений</value></data>
   <data name="DuplicateWarning" xml:space="preserve"><value>Возможный дубль: пациент, процедура и время совпадают. Удалите или оставьте явно.</value></data>
   <data name="MissingTime" xml:space="preserve"><value>Время не прочитано</value></data>
   <data name="MissingPatient" xml:space="preserve"><value>Пациент не прочитан</value></data>
@@ -167,6 +177,17 @@
   <data name="ReadyForReview" xml:space="preserve"><value>Готово к проверке</value></data>
   <data name="WaitingUpload" xml:space="preserve"><value>Ожидает отправки</value></data>
   <data name="CancelledState" xml:space="preserve"><value>Отменено</value></data>
+  <data name="NotificationSettings" xml:space="preserve"><value>Настроить уведомления и канал</value></data>
+  <data name="SendTestNotification" xml:space="preserve"><value>Показать проверочное уведомление</value></data>
+  <data name="NotificationsEnabled" xml:space="preserve"><value>Уведомления приложения: разрешены</value></data>
+  <data name="NotificationsDisabled" xml:space="preserve"><value>Уведомления приложения: запрещены</value></data>
+  <data name="NotificationChannelEnabled" xml:space="preserve"><value>Канал назначений: включён</value></data>
+  <data name="NotificationChannelDisabled" xml:space="preserve"><value>Канал назначений: выключен или заблокирован</value></data>
+  <data name="ExactAlarmsEnabled" xml:space="preserve"><value>Точные будильники: разрешены</value></data>
+  <data name="ExactAlarmsDisabled" xml:space="preserve"><value>Точные будильники: не разрешены</value></data>
+  <data name="TestNotificationTitle" xml:space="preserve"><value>Проверка напоминаний</value></data>
+  <data name="TestNotificationText" xml:space="preserve"><value>Канал приложения «Смена» работает. Данных назначений нет.</value></data>
+  <data name="TestNotificationSent" xml:space="preserve"><value>Проверочное уведомление отправлено в Android.</value></data>
   <data name="PageErrorFormat" xml:space="preserve"><value>Ошибка: {0}</value></data>
   <data name="ImportStopped" xml:space="preserve"><value>Обработка остановлена. Готовые страницы сохранены.</value></data>
   <data name="TransferTitle" xml:space="preserve"><value>Передача в GigaChat</value></data>

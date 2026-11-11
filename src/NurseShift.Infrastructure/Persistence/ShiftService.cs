@@ -172,6 +172,7 @@ public sealed class ShiftService(
         try
         {
             await context.SaveChangesAsync(cancellationToken);
+            await reminderScheduler.CancelForAssignmentAsync(assignment.Id, cancellationToken);
             await SynchronizeAfterCommitAsync(assignment.Id, cancellationToken);
             return OperationResult.Success();
         }

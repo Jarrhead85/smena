@@ -21,11 +21,18 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
     public Task<ReminderAvailability> GetAvailabilityAsync(CancellationToken cancellationToken)
     {
         var notifications = NotificationManagerCompat.From(_context).AreNotificationsEnabled();
+        var channelEnabled = true;
+        if (OperatingSystem.IsAndroidVersionAtLeast(26))
+        {
+            var manager = (NotificationManager?)_context.GetSystemService(Context.NotificationService);
+            var channel = manager?.GetNotificationChannel(NotificationPresenter.ChannelId);
+            channelEnabled = channel is not null && channel.Importance != NotificationImportance.None;
+        }
         var alarmManager = (AlarmManager?)_context.GetSystemService(Context.AlarmService);
         var exact = true;
         if (OperatingSystem.IsAndroidVersionAtLeast(31))
             exact = alarmManager?.CanScheduleExactAlarms() == true;
-        return Task.FromResult(new ReminderAvailability(notifications, exact));
+        return Task.FromResult(new ReminderAvailability(notifications, channelEnabled, exact));
     }
 
     public async Task<OperationResult> SynchronizeAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken)
@@ -40,6 +47,7 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
             await CancelForAssignmentAsync(assignmentId, cancellationToken);
             return OperationResult.Success();
         }
+        CancelAlarms(assignmentId);
         var availability = await GetAvailabilityAsync(cancellationToken);
         if (!availability.IsAvailable)
         {
@@ -85,12 +93,7 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
 
     public Task CancelForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken)
     {
-        var alarmManager = (AlarmManager?)_context.GetSystemService(Context.AlarmService);
-        if (alarmManager is not null)
-        {
-            Cancel(alarmManager, assignmentId, ReminderKind.Advance);
-            Cancel(alarmManager, assignmentId, ReminderKind.Due);
-        }
+        CancelAlarms(assignmentId);
         NotificationManagerCompat.From(_context).Cancel(ReminderPlanner.StableRequestCode(assignmentId, ReminderKind.Advance));
         NotificationManagerCompat.From(_context).Cancel(ReminderPlanner.StableRequestCode(assignmentId, ReminderKind.Due));
         return Task.CompletedTask;
@@ -102,6 +105,33 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
             await Permissions.RequestAsync<Permissions.PostNotifications>();
     }
 
+    public Task OpenNotificationSettingsAsync(CancellationToken cancellationToken)
+    {
+        var packageUri = Android.Net.Uri.Parse("package:" + _context.PackageName);
+        Intent intent;
+        if (OperatingSystem.IsAndroidVersionAtLeast(26))
+        {
+            if (NotificationManagerCompat.From(_context).AreNotificationsEnabled())
+            {
+                intent = new Intent(Android.Provider.Settings.ActionChannelNotificationSettings);
+                intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, _context.PackageName);
+                intent.PutExtra(Android.Provider.Settings.ExtraChannelId, NotificationPresenter.ChannelId);
+            }
+            else
+            {
+                intent = new Intent(Android.Provider.Settings.ActionAppNotificationSettings);
+                intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, _context.PackageName);
+            }
+        }
+        else
+        {
+            intent = new Intent(Android.Provider.Settings.ActionApplicationDetailsSettings, packageUri);
+        }
+        intent.AddFlags(ActivityFlags.NewTask);
+        _context.StartActivity(intent);
+        return Task.CompletedTask;
+    }
+
     public Task OpenExactAlarmSettingsAsync(CancellationToken cancellationToken)
     {
         if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
@@ -111,6 +141,31 @@ public sealed class AndroidReminderScheduler(INurseShiftDbContextFactory context
             _context.StartActivity(intent);
         }
         return Task.CompletedTask;
+    }
+
+    public async Task<OperationResult> ShowTestNotificationAsync(CancellationToken cancellationToken)
+    {
+        var availability = await GetAvailabilityAsync(cancellationToken);
+        if (!availability.NotificationsAllowed || !availability.NotificationChannelEnabled)
+            return new OperationResult(SafeErrorCode.SchedulingDenied);
+        try
+        {
+            NotificationPresenter.ShowTest();
+            return OperationResult.Success();
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new OperationResult(SafeErrorCode.SchedulingFailed);
+        }
+    }
+
+    private void CancelAlarms(Guid assignmentId)
+    {
+        var alarmManager = (AlarmManager?)_context.GetSystemService(Context.AlarmService);
+        if (alarmManager is null)
+            return;
+        Cancel(alarmManager, assignmentId, ReminderKind.Advance);
+        Cancel(alarmManager, assignmentId, ReminderKind.Due);
     }
 
     private PendingIntent CreateReminderIntent(Reminder reminder, PendingIntentFlags flags)

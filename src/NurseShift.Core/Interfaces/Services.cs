@@ -34,7 +34,8 @@ public interface IImportService
     Task<OperationResult> UpdateDraftAsync(Assignment draft, CancellationToken cancellationToken);
     Task<OperationResult> DeleteDraftAsync(Guid assignmentId, CancellationToken cancellationToken);
     Task<OperationResult> ExcludeUnparsedLineAsync(Guid imageId, int index, CancellationToken cancellationToken);
-    Task<OperationResult> ConfirmAsync(Guid sessionId, long expectedRowVersion, CancellationToken cancellationToken);
+    Task<OperationResult> ExcludePageAsync(Guid imageId, CancellationToken cancellationToken);
+    Task<OperationResult> ConfirmAsync(Guid sessionId, long expectedRowVersion, bool confirmedEmpty, CancellationToken cancellationToken);
     Task<OperationResult> CancelAsync(Guid sessionId, CancellationToken cancellationToken);
 }
 
@@ -45,7 +46,9 @@ public interface IReminderScheduler
     Task CancelForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken);
     Task<ReminderAvailability> GetAvailabilityAsync(CancellationToken cancellationToken);
     Task RequestNotificationPermissionAsync(CancellationToken cancellationToken);
+    Task OpenNotificationSettingsAsync(CancellationToken cancellationToken);
     Task OpenExactAlarmSettingsAsync(CancellationToken cancellationToken);
+    Task<OperationResult> ShowTestNotificationAsync(CancellationToken cancellationToken);
 }
 
 public interface IAppLockService

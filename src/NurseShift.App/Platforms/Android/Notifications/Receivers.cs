@@ -25,6 +25,8 @@ public sealed class ReminderReceiver : BroadcastReceiver
 
     private static async Task ShowAsync(Intent? intent, PendingResult pending)
     {
+        NurseShiftDbContext? db = null;
+        Reminder? reminder = null;
         try
         {
             if (intent?.Action != "ru.smena.app.action.REMINDER" || !Guid.TryParse(intent.GetStringExtra("reminder_id"), out var reminderId))
@@ -33,23 +35,47 @@ public sealed class ReminderReceiver : BroadcastReceiver
             if (scope is null)
                 return;
             var factory = scope.ServiceProvider.GetRequiredService<INurseShiftDbContextFactory>();
-            await using var db = await factory.CreateAsync(CancellationToken.None);
-            var reminder = await db.Reminders.Include(item => item.Assignment).ThenInclude(item => item!.Shift)
+            db = await factory.CreateAsync(CancellationToken.None);
+            reminder = await db.Reminders.Include(item => item.Assignment).ThenInclude(item => item!.Shift)
                 .SingleOrDefaultAsync(item => item.Id == reminderId);
             if (reminder?.Assignment?.Shift is null || reminder.ScheduleState != ScheduleState.Scheduled ||
                 reminder.Assignment.ReviewState != ReviewState.Confirmed || reminder.Assignment.ExecutionStatus != ExecutionStatus.Pending ||
                 reminder.Assignment.Shift.Status != ShiftStatus.Active)
                 return;
-            reminder.ScheduleState = ScheduleState.Delivered;
-            await db.SaveChangesAsync();
+            var now = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
+            var claimed = await db.Reminders.Where(item => item.Id == reminderId && item.ScheduleState == ScheduleState.Scheduled)
+                .ExecuteUpdateAsync(item => item.SetProperty(r => r.ScheduleState, ScheduleState.Dispatching)
+                    .SetProperty(r => r.UpdatedAtUtc, now));
+            if (claimed == 0)
+                return;
+            reminder.ScheduleState = ScheduleState.Dispatching;
+            reminder.UpdatedAtUtc = now;
             var settings = await scope.ServiceProvider.GetRequiredService<ISettingsStore>().GetAsync(CancellationToken.None);
             NotificationPresenter.Show(reminder, settings);
+            reminder.ScheduleState = ScheduleState.Posted;
+            reminder.SafeErrorCode = null;
+            reminder.UpdatedAtUtc = scope.ServiceProvider.GetRequiredService<IClock>().UtcNow;
+            await db.SaveChangesAsync(CancellationToken.None);
         }
         catch (Exception)
         {
+            if (db is not null && reminder is not null)
+            {
+                try
+                {
+                    reminder.ScheduleState = ScheduleState.Failed;
+                    reminder.SafeErrorCode = SafeErrorCode.SchedulingFailed.ToString();
+                    await db.SaveChangesAsync(CancellationToken.None);
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
         finally
         {
+            if (db is not null)
+                await db.DisposeAsync();
             pending.Finish();
         }
     }
@@ -178,5 +204,17 @@ internal static class NotificationPresenter
             builder.AddAction(0, UiStrings.Done, done);
         }
         NotificationManagerCompat.From(context).Notify(reminder.AndroidRequestCode, builder.Build());
+    }
+
+    public static void ShowTest()
+    {
+        var context = Application.Context;
+        var notification = new NotificationCompat.Builder(context, ChannelId)
+            .SetContentTitle(UiStrings.Get("TestNotificationTitle"))
+            .SetContentText(UiStrings.Get("TestNotificationText"))
+            .SetSmallIcon(Resource.Mipmap.appicon)
+            .SetAutoCancel(true)
+            .Build();
+        NotificationManagerCompat.From(context).Notify(int.MinValue, notification);
     }
 }

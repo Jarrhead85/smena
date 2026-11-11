@@ -4,9 +4,9 @@ public enum ShiftStatus { Active, Completed }
 public enum ReviewState { Draft, Confirmed }
 public enum ExecutionStatus { Pending, Done, Skipped }
 public enum ImportStatus { Preparing, Processing, Review, Confirmed, Cancelled }
-public enum ImageProcessingState { Pending, Uploading, Recognizing, Ready, Failed, Cancelled }
+public enum ImageProcessingState { Pending, Uploading, Recognizing, Ready, Failed, Cancelled, Excluded }
 public enum ReminderKind { Advance, Due }
-public enum ScheduleState { Planned, Scheduled, Failed, Cancelled, Delivered }
+public enum ScheduleState { Planned, Scheduled, Failed, Cancelled, Delivered, Dispatching, Posted }
 public enum ThemePreference { System, Light, Dark }
 
 public enum SafeErrorCode
@@ -37,5 +37,6 @@ public enum SafeErrorCode
     StorageUnavailable,
     SchedulingDenied,
     SchedulingFailed,
-    Unknown
+    Unknown,
+    PagesNotReady
 }

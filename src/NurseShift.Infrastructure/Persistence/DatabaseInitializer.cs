@@ -23,6 +23,9 @@ public sealed class DatabaseInitializer(INurseShiftDbContextFactory contextFacto
             page.ProcessingState = ImageProcessingState.Failed;
             page.SafeErrorCode = SafeErrorCode.Unknown;
         }
+        var interrupted = await context.Reminders.Where(item => item.ScheduleState == ScheduleState.Dispatching).ToListAsync(cancellationToken);
+        foreach (var reminder in interrupted)
+            reminder.ScheduleState = ScheduleState.Scheduled;
         await context.SaveChangesAsync(cancellationToken);
     }
 }

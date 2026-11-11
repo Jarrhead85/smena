@@ -175,9 +175,5 @@ public sealed partial class ShiftViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task ReminderSettingsAsync()
-    {
-        await _reminderScheduler.OpenExactAlarmSettingsAsync(CancellationToken.None);
-        await Shell.Current.GoToAsync("//settings");
-    }
+    private async Task ReminderSettingsAsync() => await Shell.Current.GoToAsync("//settings");
 }

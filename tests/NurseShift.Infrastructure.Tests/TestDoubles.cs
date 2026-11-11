@@ -28,12 +28,15 @@ internal sealed class FakeReminderScheduler : IReminderScheduler
 {
     public List<Guid> Synchronized { get; } = [];
     public List<Guid> Cancelled { get; } = [];
-    public Task<OperationResult> SynchronizeAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken) { Synchronized.Add(assignmentId); return Task.FromResult(OperationResult.Success()); }
+    public List<string> Events { get; } = [];
+    public Task<OperationResult> SynchronizeAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken) { Synchronized.Add(assignmentId); Events.Add("Synchronize:" + assignmentId); return Task.FromResult(OperationResult.Success()); }
     public Task<OperationResult> SynchronizeAllFutureAsync(CancellationToken cancellationToken) => Task.FromResult(OperationResult.Success());
-    public Task CancelForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken) { Cancelled.Add(assignmentId); return Task.CompletedTask; }
-    public Task<ReminderAvailability> GetAvailabilityAsync(CancellationToken cancellationToken) => Task.FromResult(new ReminderAvailability(true, true));
+    public Task CancelForAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken) { Cancelled.Add(assignmentId); Events.Add("Cancel:" + assignmentId); return Task.CompletedTask; }
+    public Task<ReminderAvailability> GetAvailabilityAsync(CancellationToken cancellationToken) => Task.FromResult(new ReminderAvailability(true, true, true));
     public Task RequestNotificationPermissionAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task OpenNotificationSettingsAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     public Task OpenExactAlarmSettingsAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task<OperationResult> ShowTestNotificationAsync(CancellationToken cancellationToken) => Task.FromResult(OperationResult.Success());
 }
 
 internal sealed class FakePhotoStore : IPhotoRetentionStore

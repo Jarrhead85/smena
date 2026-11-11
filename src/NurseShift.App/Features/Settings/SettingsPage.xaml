@@ -10,7 +10,10 @@
     <Button Text="{x:Static res:UiStrings.TestConnection}" Command="{Binding TestConnectionCommand}" Style="{StaticResource SecondaryButton}" />
     <BoxView /><Label Text="{x:Static res:UiStrings.Reminders}" Style="{StaticResource SectionTitle}" />
     <Label Text="{x:Static res:UiStrings.LeadMinutes}" /><Entry Text="{Binding LeadMinutes}" Keyboard="Numeric" />
-    <Button Text="{x:Static res:UiStrings.ReminderPermissions}" Command="{Binding OpenReminderSettingsCommand}" Style="{StaticResource SecondaryButton}" />
+    <Label Text="{Binding ReminderStatus}" />
+    <Button Text="{x:Static res:UiStrings.NotificationSettings}" Command="{Binding ConfigureNotificationsCommand}" IsVisible="{Binding HasNotificationIssue}" Style="{StaticResource SecondaryButton}" />
+    <Button Text="{x:Static res:UiStrings.ReminderPermissions}" Command="{Binding OpenExactAlarmSettingsCommand}" IsVisible="{Binding HasExactAlarmIssue}" Style="{StaticResource SecondaryButton}" />
+    <Button Text="{x:Static res:UiStrings.SendTestNotification}" Command="{Binding ShowTestNotificationCommand}" Style="{StaticResource SecondaryButton}" />
     <Label Text="{x:Static res:UiStrings.PrivateNotifications}" /><Switch IsToggled="{Binding PrivateNotifications}" />
     <BoxView /><Label Text="{x:Static res:UiStrings.Theme}" /><Picker SelectedIndex="{Binding ThemeIndex}" Title="{x:Static res:UiStrings.ThemeTitle}"><Picker.ItemsSource><x:Array Type="{x:Type x:String}"><x:String>{x:Static res:UiStrings.SystemTheme}</x:String><x:String>{x:Static res:UiStrings.LightTheme}</x:String><x:String>{x:Static res:UiStrings.DarkTheme}</x:String></x:Array></Picker.ItemsSource></Picker>
     <BoxView /><Label Text="{x:Static res:UiStrings.SecurityData}" Style="{StaticResource SectionTitle}" /><Label Text="{x:Static res:UiStrings.SecurityDescription}" Style="{StaticResource SecondaryText}" />

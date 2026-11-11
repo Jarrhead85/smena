@@ -20,20 +20,13 @@ public sealed class GigaChatRecognitionService(
 
     public async Task<RecognitionResult> RecognizeAsync(RecognitionRequest request, CancellationToken cancellationToken)
     {
-        if (request.Image.CanSeek && request.Image.Length > 15 * 1024 * 1024)
-            throw new RecognitionException(SafeErrorCode.ImageTooLarge);
         await CleanupPendingDeletesAsync(request.Scope, cancellationToken);
         string? remoteFileId = null;
         var deletePending = false;
         RecognitionResult? recognizedResult = null;
         try
         {
-            remoteFileId = await SendWithRetryAsync(async token =>
-            {
-                if (request.Image.CanSeek)
-                    request.Image.Position = 0;
-                return await UploadAsync(request.Image, request.Scope, token);
-            }, request.Scope, cancellationToken);
+            remoteFileId = await SendWithRetryAsync(token => UploadAsync(request, token), request.Scope, cancellationToken);
             await SetRemoteStateAsync(request.SourceImageId, remoteFileId, true, CancellationToken.None);
             deletePending = true;
             for (var attempt = 0; attempt < 2; attempt++)
@@ -103,14 +96,17 @@ public sealed class GigaChatRecognitionService(
         }
     }
 
-    private async Task<string> UploadAsync(Stream image, string scope, CancellationToken cancellationToken)
+    private async Task<string> UploadAsync(RecognitionRequest request, CancellationToken cancellationToken)
     {
+        await using var image = await request.OpenImage(cancellationToken);
+        if (image.CanSeek && image.Length > 15 * 1024 * 1024)
+            throw new RecognitionException(SafeErrorCode.ImageTooLarge);
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent("general"), "purpose");
         var fileContent = new StreamContent(image);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "page.jpg");
-        using var response = await SendApiAsync(HttpMethod.Post, "/files", scope, content, cancellationToken);
+        using var response = await SendApiAsync(HttpMethod.Post, "/files", request.Scope, content, cancellationToken);
         await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         using var json = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
         return json.RootElement.GetProperty("id").GetString() ?? throw new RecognitionException(SafeErrorCode.ResponseInvalid);

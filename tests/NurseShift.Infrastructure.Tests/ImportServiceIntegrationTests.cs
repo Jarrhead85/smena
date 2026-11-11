@@ -40,12 +40,12 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         var review = await _imports.GetAsync(session.Id, CancellationToken.None);
         Assert.Equal(ReviewState.Draft, Assert.Single(review!.Assignments).ReviewState);
         Assert.Empty(_scheduler.Synchronized);
-        var confirmed = await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, CancellationToken.None);
+        var confirmed = await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, false, CancellationToken.None);
         Assert.True(confirmed.IsSuccess);
         var details = await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None);
         Assert.Equal(ReviewState.Confirmed, Assert.Single(details!.Assignments).ReviewState);
         Assert.Single(_scheduler.Synchronized);
-        var repeated = await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, CancellationToken.None);
+        var repeated = await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, false, CancellationToken.None);
         Assert.True(repeated.IsSuccess);
         Assert.Single((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
         Assert.Single(_scheduler.Synchronized);
@@ -60,7 +60,7 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         await AddPageAsync(session.Id);
         await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
         var review = await _imports.GetAsync(session.Id, CancellationToken.None);
-        var result = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, CancellationToken.None);
+        var result = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None);
         Assert.Equal(SafeErrorCode.Validation, result.ErrorCode);
         Assert.Empty((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
         Assert.Empty(_scheduler.Synchronized);
@@ -75,10 +75,10 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         var imageId = await AddPageAsync(session.Id);
         await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
         var review = await _imports.GetAsync(session.Id, CancellationToken.None);
-        Assert.Equal(SafeErrorCode.UnparsedLinesRemain, (await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, CancellationToken.None)).ErrorCode);
+        Assert.Equal(SafeErrorCode.UnparsedLinesRemain, (await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None)).ErrorCode);
         await _imports.ExcludeUnparsedLineAsync(imageId, 0, CancellationToken.None);
         review = await _imports.GetAsync(session.Id, CancellationToken.None);
-        Assert.True((await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, CancellationToken.None)).IsSuccess);
+        Assert.True((await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None)).IsSuccess);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         Assert.True((await _imports.UpdateDraftAsync(draft, CancellationToken.None)).IsSuccess);
         review = await _imports.GetAsync(session.Id, CancellationToken.None);
 
-        var result = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, CancellationToken.None);
+        var result = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         var assignment = Assert.Single((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
@@ -159,6 +159,75 @@ public sealed class ImportServiceIntegrationTests : IDisposable
         Assert.True(result.IsSuccess);
         Assert.Empty((await _imports.GetAsync(session.Id, CancellationToken.None))!.Assignments);
         Assert.Empty((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
+        Assert.Empty(_scheduler.Synchronized);
+    }
+
+    [Theory]
+    [InlineData(ImageProcessingState.Pending)]
+    [InlineData(ImageProcessingState.Uploading)]
+    [InlineData(ImageProcessingState.Recognizing)]
+    [InlineData(ImageProcessingState.Failed)]
+    public async Task IncompleteOrFailedPage_BlocksConfirmAndDoesNotSchedule(ImageProcessingState state)
+    {
+        var shiftId = await CreateShiftAsync();
+        var session = await _imports.CreateAsync(shiftId, CancellationToken.None);
+        var imageId = await AddPageAsync(session.Id);
+        await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
+        var review = await _imports.GetAsync(session.Id, CancellationToken.None);
+        await using (var context = await _factory.CreateAsync(CancellationToken.None))
+        {
+            var page = await context.SourceImages.SingleAsync(item => item.Id == imageId);
+            page.ProcessingState = state;
+            await context.SaveChangesAsync(CancellationToken.None);
+        }
+
+        var result = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None);
+
+        Assert.Equal(SafeErrorCode.PagesNotReady, result.ErrorCode);
+        Assert.Empty((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
+        Assert.Empty(_scheduler.Synchronized);
+    }
+
+    [Fact]
+    public async Task ExcludePage_RemovesItsDraftsAndRequiresExplicitEmptyConfirmation()
+    {
+        _recognition.Result = _recognition.Result with { UnparsedLines = [new UnparsedLine("Синтетическая нечитаемая строка", "Тест")] };
+        var shiftId = await CreateShiftAsync();
+        var session = await _imports.CreateAsync(shiftId, CancellationToken.None);
+        var imageId = await AddPageAsync(session.Id);
+        await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
+        var review = await _imports.GetAsync(session.Id, CancellationToken.None);
+
+        var excluded = await _imports.ExcludePageAsync(imageId, CancellationToken.None);
+
+        Assert.True(excluded.IsSuccess);
+        review = await _imports.GetAsync(session.Id, CancellationToken.None);
+        Assert.Equal(ImageProcessingState.Excluded, Assert.Single(review!.Pages).ProcessingState);
+        Assert.Empty(review.Assignments);
+        Assert.Equal(SafeErrorCode.ConfirmationRequired,
+            (await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, false, CancellationToken.None)).ErrorCode);
+        Assert.Empty(_scheduler.Synchronized);
+        Assert.True((await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, true, CancellationToken.None)).IsSuccess);
+        Assert.Empty((await _shifts.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments);
+        Assert.Empty(_scheduler.Synchronized);
+    }
+
+    [Fact]
+    public async Task EmptyRecognition_RequiresSeparateExplicitConfirmation()
+    {
+        _recognition.Result = _recognition.Result with { Assignments = [] };
+        var shiftId = await CreateShiftAsync();
+        var session = await _imports.CreateAsync(shiftId, CancellationToken.None);
+        await AddPageAsync(session.Id);
+        await _imports.RecognizeAsync(session.Id, true, null, CancellationToken.None);
+        var review = await _imports.GetAsync(session.Id, CancellationToken.None);
+
+        var blocked = await _imports.ConfirmAsync(session.Id, review!.Session.RowVersion, false, CancellationToken.None);
+
+        Assert.Equal(SafeErrorCode.ConfirmationRequired, blocked.ErrorCode);
+        Assert.Equal(ImportStatus.Review, (await _imports.GetAsync(session.Id, CancellationToken.None))!.Session.Status);
+        Assert.Empty(_scheduler.Synchronized);
+        Assert.True((await _imports.ConfirmAsync(session.Id, review.Session.RowVersion, true, CancellationToken.None)).IsSuccess);
         Assert.Empty(_scheduler.Synchronized);
     }
 

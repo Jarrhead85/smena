@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:core="clr-namespace:NurseShift.Core.Models;assembly=NurseShift.Core" xmlns:vm="clr-namespace:NurseShift.App.Features.Import" x:Class="NurseShift.App.Features.Import.ReviewPage" Title="{x:Static res:UiStrings.ReviewTitle}">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:res="clr-namespace:NurseShift.App.Resources.Strings" xmlns:vm="clr-namespace:NurseShift.App.Features.Import" x:Class="NurseShift.App.Features.Import.ReviewPage" Title="{x:Static res:UiStrings.ReviewTitle}">
   <Grid RowDefinitions="*,Auto">
     <CollectionView ItemsSource="{Binding Assignments}">
       <CollectionView.Header>
         <VerticalStackLayout Padding="16" Spacing="12">
           <Label Text="{x:Static res:UiStrings.ReviewTitle}" Style="{StaticResource ScreenTitle}" />
           <Label Text="{Binding Summary}" FontAttributes="Bold" />
+          <Label Text="{Binding PageSummary}" />
+          <Label Text="{Binding BlockingPagesText}" IsVisible="{Binding HasBlockingPages}" TextColor="{AppThemeBinding Light={StaticResource ErrorColor}, Dark=#F0A3A3}" />
           <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Pages}">
             <BindableLayout.ItemTemplate>
-              <DataTemplate x:DataType="core:SourceImage">
-                <Button Text="{Binding SortOrder, StringFormat={x:Static res:UiStrings.PageFormat}}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectPageCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" />
+              <DataTemplate x:DataType="vm:ReviewPageRow">
+                <VerticalStackLayout Spacing="4" Margin="0,0,8,8">
+                  <Button Text="{Binding DisplayNumber, StringFormat={x:Static res:UiStrings.PageFormat}}" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectPageCommand}" CommandParameter="{Binding Page}" Style="{StaticResource SecondaryButton}" />
+                  <Label Text="{Binding Status}" Style="{StaticResource SecondaryText}" MaximumWidthRequest="180" />
+                </VerticalStackLayout>
               </DataTemplate>
             </BindableLayout.ItemTemplate>
           </FlexLayout>
           <Image Source="{Binding PageImage}" HeightRequest="180" Aspect="AspectFit" SemanticProperties.Description="{x:Static res:UiStrings.PhotoTitle}" />
           <Button Text="{x:Static res:UiStrings.Retry}" Command="{Binding RetryCommand}" IsVisible="{Binding HasFailedPages}" />
+          <Button Text="{x:Static res:UiStrings.ExcludePage}" Command="{Binding ExcludePageCommand}" IsVisible="{Binding CanExcludeSelectedPage}" Style="{StaticResource SecondaryButton}" />
           <Button Text="{x:Static res:UiStrings.ViewPhoto}" Command="{Binding ViewPhotoCommand}" Style="{StaticResource SecondaryButton}" />
           <Button Text="{x:Static res:UiStrings.AddManual}" Command="{Binding AddManualCommand}" Style="{StaticResource SecondaryButton}" />
         </VerticalStackLayout>

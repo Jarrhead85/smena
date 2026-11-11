@@ -113,6 +113,41 @@ public sealed class ShiftServiceIntegrationTests : IDisposable
         Assert.Single(context.Patients);
     }
 
+    [Fact]
+    public async Task EditAssignment_CancelsOldSystemEventsBeforeSchedulingReplacement()
+    {
+        var shiftId = await CreateShiftAsync();
+        await _service.AddAssignmentAsync(shiftId, Input(new DateTime(2026, 11, 10, 23, 30, 0)), CancellationToken.None);
+        var assignment = (await _service.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments.Single();
+        _scheduler.Events.Clear();
+
+        var result = await _service.EditAssignmentAsync(assignment.Id,
+            Input(new DateTime(2026, 11, 11, 0, 0, 0)) with { AdvanceLeadMinutes = 0 },
+            assignment.RowVersion, false, CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(new[] { "Cancel:" + assignment.Id, "Synchronize:" + assignment.Id }, _scheduler.Events);
+    }
+
+    [Fact]
+    public async Task Initialize_InterruptedNotificationDispatch_ReturnsToScheduled()
+    {
+        var shiftId = await CreateShiftAsync();
+        await _service.AddAssignmentAsync(shiftId, Input(new DateTime(2026, 11, 10, 23, 30, 0)), CancellationToken.None);
+        var reminderId = (await _service.GetShiftDetailsAsync(shiftId, CancellationToken.None))!.Assignments.Single().Reminders.First().Id;
+        await using (var context = await _factory.CreateAsync(CancellationToken.None))
+        {
+            var reminder = await context.Reminders.SingleAsync(item => item.Id == reminderId);
+            reminder.ScheduleState = ScheduleState.Dispatching;
+            await context.SaveChangesAsync(CancellationToken.None);
+        }
+
+        await new DatabaseInitializer(_factory).InitializeAsync(CancellationToken.None);
+
+        await using var verification = await _factory.CreateAsync(CancellationToken.None);
+        Assert.Equal(ScheduleState.Scheduled, (await verification.Reminders.SingleAsync(item => item.Id == reminderId)).ScheduleState);
+    }
+
     private async Task<Guid> CreateShiftAsync()
     {
         var result = await _service.CreateShiftAsync(new DateTime(2026, 11, 10, 22, 0, 0), new DateTime(2026, 11, 11, 6, 0, 0), "Europe/Moscow", CancellationToken.None);

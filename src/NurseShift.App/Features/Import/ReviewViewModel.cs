@@ -30,6 +30,22 @@ public sealed class UnparsedRow(Guid imageId, int index, UnparsedLine line)
     public string Reason => line.Reason;
 }
 
+public sealed class ReviewPageRow(SourceImage page)
+{
+    public SourceImage Page { get; } = page;
+    public int DisplayNumber => Page.SortOrder + 1;
+    public string Status => Page.ProcessingState switch
+    {
+        ImageProcessingState.Ready => UiStrings.Get("ReadyForReview"),
+        ImageProcessingState.Failed => UiStrings.Error(Page.SafeErrorCode ?? SafeErrorCode.Unknown),
+        ImageProcessingState.Excluded => UiStrings.Get("ExcludedState"),
+        ImageProcessingState.Pending => UiStrings.Get("WaitingUpload"),
+        ImageProcessingState.Uploading => UiStrings.Get("Uploading"),
+        ImageProcessingState.Recognizing => UiStrings.Get("Recognizing"),
+        _ => UiStrings.Get("CancelledState")
+    };
+}
+
 [QueryProperty(nameof(SessionId), "SessionId")]
 public sealed partial class ReviewViewModel(IImportService importService, IPhotoAccess photoAccess) : ViewModelBase
 {
@@ -38,9 +54,13 @@ public sealed partial class ReviewViewModel(IImportService importService, IPhoto
     [ObservableProperty] private SourceImage? selectedPage;
     [ObservableProperty] private ImageSource? pageImage;
     [ObservableProperty] private string summary = string.Empty;
+    [ObservableProperty] private string pageSummary = string.Empty;
+    [ObservableProperty] private string blockingPagesText = string.Empty;
+    [ObservableProperty] private bool hasBlockingPages;
+    [ObservableProperty] private bool canExcludeSelectedPage;
     [ObservableProperty] private bool hasUnparsed;
     [ObservableProperty] private bool hasFailedPages;
-    public ObservableCollection<SourceImage> Pages { get; } = [];
+    public ObservableCollection<ReviewPageRow> Pages { get; } = [];
     public ObservableCollection<ReviewRow> Assignments { get; } = [];
     public ObservableCollection<UnparsedRow> Unparsed { get; } = [];
 
@@ -53,21 +73,28 @@ public sealed partial class ReviewViewModel(IImportService importService, IPhoto
             return;
         }
         HasFailedPages = _details.Pages.Any(item => item.ProcessingState == ImageProcessingState.Failed);
+        UpdateSummary();
         var currentPageId = SelectedPage?.Id;
         Pages.Clear();
         foreach (var page in _details.Pages)
-            Pages.Add(page);
-        SelectedPage = Pages.FirstOrDefault(item => item.Id == currentPageId) ?? Pages.FirstOrDefault();
+            Pages.Add(new ReviewPageRow(page));
+        SelectedPage = Pages.FirstOrDefault(item => item.Page.Id == currentPageId)?.Page ?? Pages.FirstOrDefault()?.Page;
         await RefreshPageAsync();
     }
 
-    partial void OnSelectedPageChanged(SourceImage? value) => _ = RefreshPageAsync();
+    partial void OnSelectedPageChanged(SourceImage? value)
+    {
+        CanExcludeSelectedPage = value is not null && value.ProcessingState is not ImageProcessingState.Excluded and
+            not ImageProcessingState.Uploading and not ImageProcessingState.Recognizing;
+        _ = RefreshPageAsync();
+    }
 
     private async Task RefreshPageAsync()
     {
         PageImage = null;
         Assignments.Clear();
         Unparsed.Clear();
+        HasUnparsed = false;
         if (_details is null || SelectedPage is null)
             return;
         try
@@ -88,9 +115,25 @@ public sealed partial class ReviewViewModel(IImportService importService, IPhoto
             if (!lines[index].Excluded)
                 Unparsed.Add(new UnparsedRow(SelectedPage.Id, index, lines[index]));
         HasUnparsed = Unparsed.Count > 0;
+    }
+
+    private void UpdateSummary()
+    {
+        if (_details is null)
+            return;
         var blocking = _details.Assignments.Count(item => string.IsNullOrWhiteSpace(item.PatientName) || string.IsNullOrWhiteSpace(item.Procedure) || item.DueAtUtc is null);
-        var allUnparsed = _details.Pages.SelectMany(ImportValidator.ReadUnparsedLines).Count(item => !item.Excluded);
+        var allUnparsed = _details.Pages.Where(item => item.ProcessingState != ImageProcessingState.Excluded)
+            .SelectMany(ImportValidator.ReadUnparsedLines).Count(item => !item.Excluded);
         Summary = UiStrings.Format("ReviewSummaryFormat", _details.Assignments.Count, blocking, allUnparsed);
+        PageSummary = UiStrings.Format("PageSummaryFormat",
+            _details.Pages.Count(item => item.ProcessingState == ImageProcessingState.Ready),
+            _details.Pages.Count(item => item.ProcessingState == ImageProcessingState.Failed),
+            _details.Pages.Count(item => item.ProcessingState == ImageProcessingState.Excluded));
+        var blockingPages = _details.Pages.Where(item => item.ProcessingState is ImageProcessingState.Pending or
+            ImageProcessingState.Uploading or ImageProcessingState.Recognizing or ImageProcessingState.Failed or ImageProcessingState.Cancelled)
+            .Select(item => (item.SortOrder + 1).ToString()).ToArray();
+        HasBlockingPages = blockingPages.Length > 0;
+        BlockingPagesText = HasBlockingPages ? UiStrings.Format("BlockingPages", string.Join(", ", blockingPages)) : string.Empty;
     }
 
     [RelayCommand] private void SelectPage(SourceImage page) => SelectedPage = page;
@@ -101,7 +144,8 @@ public sealed partial class ReviewViewModel(IImportService importService, IPhoto
     [RelayCommand]
     private async Task AddManualAsync()
     {
-        Show(await importService.AddDraftAsync(SessionId, SelectedPage?.Id, null, CancellationToken.None));
+        var sourceImageId = SelectedPage?.ProcessingState == ImageProcessingState.Excluded ? null : SelectedPage?.Id;
+        Show(await importService.AddDraftAsync(SessionId, sourceImageId, null, CancellationToken.None));
         await LoadAsync();
     }
 
@@ -123,14 +167,49 @@ public sealed partial class ReviewViewModel(IImportService importService, IPhoto
     }
 
     [RelayCommand]
-    private async Task ConfirmAsync()
+    private async Task ExcludePageAsync()
     {
-        if (_details is null || IsBusy)
+        if (SelectedPage is null || IsBusy)
+            return;
+        var approved = await Shell.Current.DisplayAlert(
+            UiStrings.Format("ExcludePageTitle", SelectedPage.SortOrder + 1),
+            UiStrings.Get("ExcludePageText"), UiStrings.Get("ExcludePage"), UiStrings.Cancel);
+        if (!approved)
             return;
         IsBusy = true;
         try
         {
-            var result = await importService.ConfirmAsync(SessionId, _details.Session.RowVersion, CancellationToken.None);
+            Show(await importService.ExcludePageAsync(SelectedPage.Id, CancellationToken.None));
+            await LoadAsync();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ConfirmAsync()
+    {
+        if (_details is null || IsBusy)
+            return;
+        if (HasBlockingPages)
+        {
+            Show(SafeErrorCode.PagesNotReady);
+            return;
+        }
+        var confirmedEmpty = false;
+        if (_details.Assignments.Count == 0)
+        {
+            confirmedEmpty = await Shell.Current.DisplayAlert(UiStrings.Get("EmptyImportTitle"),
+                UiStrings.Get("EmptyImportText"), UiStrings.Get("ConfirmEmptyImport"), UiStrings.Cancel);
+            if (!confirmedEmpty)
+                return;
+        }
+        IsBusy = true;
+        try
+        {
+            var result = await importService.ConfirmAsync(SessionId, _details.Session.RowVersion, confirmedEmpty, CancellationToken.None);
             Show(result);
             if (result.IsSuccess)
                 await Shell.Current.GoToAsync("//shift");

@@ -259,8 +259,9 @@ public sealed class ImportService(
                 progress?.Report(new ImportProgress(pageIndex + 1, pages.Count, ImageProcessingState.Uploading));
                 await context.SaveChangesAsync(cancellationToken);
                 EnsurePrivatePath(page.LocalPath);
-                await using var stream = new FileStream(page.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
-                var request = new RecognitionRequest(page.Id, stream, session.Shift, settings.Model, settings.Scope);
+                var request = new RecognitionRequest(page.Id,
+                    _ => new ValueTask<Stream>(new FileStream(page.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true)),
+                    session.Shift, settings.Model, settings.Scope);
                 page.ProcessingState = ImageProcessingState.Recognizing;
                 await context.SaveChangesAsync(cancellationToken);
                 var result = await recognitionService.RecognizeAsync(request, cancellationToken);
@@ -325,7 +326,8 @@ public sealed class ImportService(
         var session = await context.ImportSessions.SingleOrDefaultAsync(item => item.Id == sessionId && item.Status == ImportStatus.Review, cancellationToken);
         if (session is null)
             return new OperationResult(SafeErrorCode.ImportNotFound);
-        if (sourceImageId.HasValue && !await context.SourceImages.AnyAsync(item => item.Id == sourceImageId && item.ImportSessionId == sessionId, cancellationToken))
+        if (sourceImageId.HasValue && !await context.SourceImages.AnyAsync(item => item.Id == sourceImageId &&
+            item.ImportSessionId == sessionId && item.ProcessingState != ImageProcessingState.Excluded, cancellationToken))
             return new OperationResult(SafeErrorCode.Validation);
         var settings = await settingsStore.GetAsync(cancellationToken);
         var now = clock.UtcNow;
@@ -401,7 +403,29 @@ public sealed class ImportService(
         return OperationResult.Success();
     }
 
-    public async Task<OperationResult> ConfirmAsync(Guid sessionId, long expectedRowVersion, CancellationToken cancellationToken)
+    public async Task<OperationResult> ExcludePageAsync(Guid imageId, CancellationToken cancellationToken)
+    {
+        await using var context = await contextFactory.CreateAsync(cancellationToken);
+        var page = await context.SourceImages.Include(item => item.ImportSession)
+            .SingleOrDefaultAsync(item => item.Id == imageId, cancellationToken);
+        if (page?.ImportSession is null || page.ImportSession.Status != ImportStatus.Review)
+            return new OperationResult(SafeErrorCode.ImportNotFound);
+        if (page.ProcessingState == ImageProcessingState.Excluded)
+            return OperationResult.Success();
+        if (page.ProcessingState is ImageProcessingState.Uploading or ImageProcessingState.Recognizing)
+            return new OperationResult(SafeErrorCode.PagesNotReady);
+        var drafts = await context.Assignments.Where(item => item.SourceImageId == imageId && item.ReviewState == ReviewState.Draft)
+            .ToListAsync(cancellationToken);
+        context.Assignments.RemoveRange(drafts);
+        page.ProcessingState = ImageProcessingState.Excluded;
+        page.SafeErrorCode = null;
+        page.ImportSession.UpdatedAtUtc = clock.UtcNow;
+        page.ImportSession.RowVersion++;
+        await context.SaveChangesAsync(cancellationToken);
+        return OperationResult.Success();
+    }
+
+    public async Task<OperationResult> ConfirmAsync(Guid sessionId, long expectedRowVersion, bool confirmedEmpty, CancellationToken cancellationToken)
     {
         await using var context = await contextFactory.CreateAsync(cancellationToken);
         var session = await context.ImportSessions.Include(item => item.Shift).SingleOrDefaultAsync(item => item.Id == sessionId, cancellationToken);
@@ -417,7 +441,7 @@ public sealed class ImportService(
             .Where(item => item.ShiftId == session.ShiftId && item.ReviewState == ReviewState.Draft &&
                 (item.SourceImageId == null || pageIds.Contains(item.SourceImageId.Value)))
             .ToListAsync(cancellationToken);
-        var validation = _validator.Validate(session, pages, drafts);
+        var validation = _validator.Validate(session, pages, drafts, confirmedEmpty);
         if (!validation.IsSuccess)
             return validation;
 
